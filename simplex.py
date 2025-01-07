@@ -60,23 +60,43 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
     return problem_type, c, A, relations, b, decision_variables_limits
 
 def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> None:
-    '''
+    """
         Description:
-
+            Exibe o problema de programação linear em formato legível.
         Args:
+            problem_type (str): Tipo do problema ('max' para maximização ou 'min' para minimização).
+            c (np.ndarray): Vetor de coeficientes da função objetivo.
+            A (np.ndarray): Matriz de coeficientes das restrições.
+            relations (List[str]): Lista de relações das restrições (e.g., '<=', '>=' ou '=').
+            b (np.ndarray): Vetor de valores dos recursos.
+            decision_variables_limits (str): Limites das variáveis de decisão.
+        Returns:
+            None
+    """
 
-        Return:
-    '''
+    def format_equation(coeffs: np.ndarray) -> str:
+        """
+            Description:
+                Formata uma equação (função ou restrição) para exibição legível.
+            Args:
+                coeffs (np.ndarray): Coeficientes da equação.
+            Returns:
+                str: Equação formatada.
+        """
+        return " + ".join(f"{coeff:.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs))
 
-    c = [str(number) + 'x' + str(index+1) for index, number in enumerate(c)]
-    problem_type = "Maximizar" if problem_type == "max" else "Minimizar"
-    print(problem_type + ' ' + 'Z = ' + ' + '.join(c) + "\n")
+    # Exibir o tipo do problema
+    problem_type_text = "Maximizar" if problem_type.lower() == "max" else "Minimizar"
+    print(f"{problem_type_text} Z = {format_equation(c)}\n")
+
+    # Exibir as restrições
     print("Sujeito a:")
-    for restriction, relation, resource in zip(A,relations,b):
-        restriction = [str(number) + 'x' + str(index+1) for index, number in enumerate(restriction)]
-        print("\t" + ' + '.join(restriction) + " " + relation + " " + str(resource))
-    print("\t" + decision_variables_limits)
+    for coeffs, relation, resource in zip(A, relations, b):
+        print(f"\t{format_equation(coeffs)} {relation} {resource:.2f}")
 
+    # Exibir limites das variáveis de decisão
+    print(f"\t{decision_variables_limits}\n")
+    
 def main():
     if len(sys.argv) < 2:
         print("Forneça o caminho do arquivo!")
@@ -88,6 +108,7 @@ def main():
         with open(file_path, 'r') as file:
             content = file.read()
             problem_type, c, A, delimitators, b, decision_variables_limits = process_entry(content)
+            print("Segue abaixo, na forma padrão, o problema a ser resolvido:\n")
             show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
     except FileNotFoundError:
         print("Arquivo não encontrado")

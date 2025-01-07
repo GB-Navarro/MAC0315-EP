@@ -5,7 +5,7 @@ from typing import Tuple, List
 def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
     '''
         Description:
-            Processa o conteúdo de uma string, visando extrair as informações de um problema de otimização linear.
+            Processa o conteúdo do arquivo de entrada, visando extrair as informações de um problema de otimização linear.
         Args:
             content (str): Texto contendo a descrição do problema.
         Return:
@@ -59,8 +59,25 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
 
     return problem_type, c, A, relations, b, decision_variables_limits
 
+def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> None:
+    '''
+        Description:
+
+        Args:
+
+        Return:
+    '''
+
+    c = [str(number) + 'x' + str(index+1) for index, number in enumerate(c)]
+    problem_type = "Maximizar" if problem_type == "max" else "Minimizar"
+    print(problem_type + ' ' + 'Z = ' + ' + '.join(c) + "\n")
+    print("Sujeito a:")
+    for restriction, relation, resource in zip(A,relations,b):
+        restriction = [str(number) + 'x' + str(index+1) for index, number in enumerate(restriction)]
+        print("\t" + ' + '.join(restriction) + " " + relation + " " + str(resource))
+    print("\t" + decision_variables_limits)
+
 def main():
-    
     if len(sys.argv) < 2:
         print("Forneça o caminho do arquivo!")
         sys.exit(1)
@@ -71,6 +88,7 @@ def main():
         with open(file_path, 'r') as file:
             content = file.read()
             problem_type, c, A, delimitators, b, decision_variables_limits = process_entry(content)
+            show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
     except FileNotFoundError:
         print("Arquivo não encontrado")
     except ValueError as e:

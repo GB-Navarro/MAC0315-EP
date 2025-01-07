@@ -1,4 +1,5 @@
 import sys
+import re
 import numpy as np
 from typing import Tuple, List
 
@@ -19,39 +20,38 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
 
     # Remove linhas vazias e comentários.
     lines = [line for line in content.split("\n") if (line != '' and not line.startswith('#'))]
-
+    
     # Armazena a string que indica o tipo de problema.
     problem_type = lines[0]
-
+    
     # Armazena o vetor que contém os coeficientes que representam os custos de cada uma das variáveis de decisão.
     c = np.fromstring(lines[1],sep=" ")
-    # Armazena o número de variáveis de decisão.
-    decision_variables_number = c.shape[0]
-
+    
     # Armazena a string que indica os limites das variáveis de decisão.
     decision_variables_limits = lines[-1]
-    
+
     # Cria algumas variáveis para processar as restrições.
     restrictions = lines[2:len(lines)-1] # Lista de strings que representam todas as restrições do problema.
     A = [] # Variável que armazenará a matriz que contém os coeficientes de cada uma das restrições.
     b = [] # Variável que armazenará o vetor de recursos.
     relations = [] # Variável que armazenará as relações (<=, ==, >=) entre as restrições e seus respectivos recursos. 
-   
+
     for restriction in restrictions:
+        # Divide a string 'restriction' em três partes usando os operadores (<=, ==, >=) como delimitadores:
+        # - Posição 0: Coeficientes da linha correspondente da matriz A.
+        # - Posição 1: Relação entre os coeficientes e o recurso (<=, ==, >=).
+        # - Posição 2: Valor do recurso correspondente (elemento de b).
+        restriction = re.split(r"( <= | == | >= )",restriction)
+        
         # Obtem e armazena a relação (<=, ==, >=) entre a restrição e o recurso em questão.
-        relation = restriction[decision_variables_number*2:decision_variables_number*2+2]
+        relation = restriction[1].strip()
         relations.append(relation)
         
-        # Divide a string 'restriction' em dois elementos:
-        # - A parte à esquerda da relação (posição 0) contém os coeficientes da linha em questão da matriz A .
-        # - A parte à direita da relação (posição 1) contém o recurso correspondente a linha em questão (valor de b).
-        restriction = restriction.split(f" {relation} ")
-        
-        # Adiciona uma nova linha de coeficientes a matriz A.
+        # Converte os coeficientes (posição 0) em um array numérico e adiciona à matriz A.
         A.append(np.fromstring(restriction[0],sep=" "))
         
-        # Adiciona um novo coeficiente de recurso ao vetor b.
-        b.append(np.float64(restriction[1]))
+        # Converte o recurso (posição 2) em um número e adiciona ao vetor b.
+        b.append(np.float64(restriction[2]))
     
     # Transforma tanto a matriz A quanto o vetor b em objetos do tipo np.ndarray (numpy array), visando facilitar a manipulação dos mesmos.  
     A = np.array(A)
@@ -62,7 +62,7 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
 def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> None:
     """
         Description:
-            Exibe o problema de programação linear em formato legível.
+            Exibe o problema de programação linear na forma padrão.
         Args:
             problem_type (str): Tipo do problema ('max' para maximização ou 'min' para minimização).
             c (np.ndarray): Vetor de coeficientes da função objetivo.
@@ -77,13 +77,14 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
     def format_equation(coeffs: np.ndarray) -> str:
         """
             Description:
-                Formata uma equação (função ou restrição) para exibição legível.
+                Formata uma equação (função ou restrição) para exibição na forma padrão.
             Args:
                 coeffs (np.ndarray): Coeficientes da equação.
             Returns:
                 str: Equação formatada.
         """
-        return " + ".join(f"{coeff:.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs))
+
+        return " ".join(f"{'+' if coeff >= 0 else '-'} {abs(coeff):.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs)).strip()
 
     # Exibe o tipo do problema
     problem_type_text = "Maximizar" if problem_type.lower() == "max" else "Minimizar"

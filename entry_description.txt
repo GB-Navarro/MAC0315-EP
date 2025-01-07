@@ -14,3 +14,4 @@ am1 am2 ... amn (<= || == || >=) bm
 (xi >= 0 || j <= xi <= k)                # Definição dos limites de cada variável (j e k são números reais).
 
 # IMPORTANTE: Problemas que fujam a esse formato não serão interpretados corretamente pelo programa.
+# IMPORTANTE: Cuidado com espaços vazios indevidos na hora de escrever o problema, eles não serão tratados pelo programa.

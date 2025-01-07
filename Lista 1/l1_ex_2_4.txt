@@ -1,0 +1,13 @@
+# Tipo do problema
+max
+
+# Custos das variáveis de decisão
+2 3 4
+
+# Restrições
+4 2 3 <= 20
+3 3 2 <= 15
+1 4 2 <= 10
+
+# Limites das variáveis de decisão
+xi >= 0

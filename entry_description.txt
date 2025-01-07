@@ -1,0 +1,16 @@
+# Tipo do problema
+max || min                               # Indica se o problema é de maximização ou minimização.
+
+# Custos das variáveis de decisão
+c1 c2 ... cn                             # Valores associados às variáveis de decisão (coeficientes da função objetivo).
+
+# Restrições
+a11 a12 ... a1n (<= || == || >=) b1
+a21 a22 ... a2n (<= || == || >=) b2
+...                                      # Cada linha representa uma restrição linear e sua relação com o vetor de recursos.
+am1 am2 ... amn (<= || == || >=) bm
+
+# Limites das variáveis de decisão
+(xi >= 0 || j <= xi <= k)                # Definição dos limites de cada variável (j e k são números reais).
+
+# IMPORTANTE: Problemas que fujam a esse formato não serão interpretados corretamente pelo programa.

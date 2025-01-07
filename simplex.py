@@ -98,7 +98,29 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
     # Exibe os limites das variáveis de decisão
     print(f"\t{decision_variables_limits}\n")
     
+def preprocess_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
+    '''
+        Description:
+
+        Args:
+
+        Return:
+    '''
+    
+    if all(elemento == "<=" for elemento in relations):
+        #
+        m = b.shape[0]
+        #
+        A = np.hstack((A, np.eye(m)))
+        #
+        c = np.concatenate((c, np.zeros(m)))
+        #
+        relations = ["==" for _ in range(len(relations))]
+
+    return problem_type, c, A, relations, b, decision_variables_limits
+        
 def main():
+    
     if len(sys.argv) < 2:
         print("Forneça o caminho do arquivo!")
         sys.exit(1)
@@ -107,12 +129,25 @@ def main():
     
     try:
         with open(file_path, 'r') as file:
+            #
             content = file.read()
+            #
             problem_type, c, A, delimitators, b, decision_variables_limits = process_entry(content)
-            print("Segue abaixo, na forma padrão, o problema a ser resolvido:\n")
+            
+            #
+            print("O problema a ser resolvido é:\n")
             show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
+            
+            #
+            problem_type, c, A, delimitators, b, decision_variables_limits = preprocess_problem(problem_type, c, A, 
+                                                                                                delimitators, b, decision_variables_limits)
+
+            print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
+            show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
+            
     except FileNotFoundError:
         print("Arquivo não encontrado")
+        
     except ValueError as e:
         print(f"Erro: {e}")
 

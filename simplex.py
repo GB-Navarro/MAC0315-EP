@@ -84,7 +84,7 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
                 str: Equação formatada.
         """
 
-        return " ".join(f"{'+' if coeff >= 0 else '-'} {abs(coeff):.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs)).strip()
+        return " ".join(f"{'-' if coeff < 0 else ('+' if (coeff >= 0 and idx > 0) else '')} {abs(coeff):.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs)).strip()
 
     # Exibe o tipo do problema
     problem_type_text = "Maximizar" if problem_type.lower() == "max" else "Minimizar"

@@ -85,16 +85,16 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
         """
         return " + ".join(f"{coeff:.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs))
 
-    # Exibir o tipo do problema
+    # Exibe o tipo do problema
     problem_type_text = "Maximizar" if problem_type.lower() == "max" else "Minimizar"
     print(f"{problem_type_text} Z = {format_equation(c)}\n")
 
-    # Exibir as restrições
+    # Exibe as restrições
     print("Sujeito a:")
     for coeffs, relation, resource in zip(A, relations, b):
         print(f"\t{format_equation(coeffs)} {relation} {resource:.2f}")
 
-    # Exibir limites das variáveis de decisão
+    # Exibe os limites das variáveis de decisão
     print(f"\t{decision_variables_limits}\n")
     
 def main():

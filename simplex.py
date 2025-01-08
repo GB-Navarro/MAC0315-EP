@@ -147,49 +147,83 @@ def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np
 
     return c, A, relations, decision_variables_limits
 
-def simplex_revised(problem_type, c, A, B_idx, N_idx, b, verbose=False):
+def simplex_log(B_idx: list, N_idx: list, reduced_costs: np.ndarray, entering_index: int, leaving_index: int, verbose: bool) -> None:
     '''
         Description:
-
+            Função auxiliar para registrar informações durante a execução do método simplex revisado.
+            Quando o modo verbose está ativado, a função exibe os índices das variáveis básicas e não básicas,
+            os custos reduzidos, e os índices das variáveis que estão entrando e saindo da base.
         Args:
-
+            B_idx (list): Lista ou array contendo os índices das variáveis na base (B).
+            N_idx (list): Lista ou array contendo os índices das variáveis fora da base (N).
+            reduced_costs (np.ndarray): Array contendo os custos reduzidos das variáveis não básicas.
+            entering_index (int): Índice da variável que está entrando na base.
+            leaving_index (int): Índice da variável que está saindo da base.
+            verbose (bool): Indica se as informações devem ser exibidas (True) ou não (False).
         Return:
-
+            None
     '''
     
+    if verbose:
+        # Imprime os índices das variáveis básicas (B) e não básicas (N).
+        print(f"B indices: {B_idx}, N indices: {N_idx}")
+        
+        # Imprime os custos reduzidos das variáveis não básicas.
+        print(f"Reduced costs: {reduced_costs}")
+        
+        # Imprime o índice da variável que está entrando na base.
+        print(f"Entering index: {entering_index}")
+        
+        # Imprime o índice da variável que está saindo da base.
+        print(f"Leaving index: {leaving_index}\n")
+
+def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list, N_idx: list, 
+                    b: np.ndarray, verbose: bool = False) -> Tuple[np.ndarray, float]:
+    '''
+        Description:
+            Implementa o método simplex revisado para resolver problemas de programação linear.
+            O método busca iterativamente uma solução ótima movendo-se ao longo das arestas do politopo 
+            viável até alcançar a solução ótima, de acordo com o tipo do problema (maximização ou minimização).
+        Args:
+            problem_type (str): Indica o tipo do problema, 'max' para maximização ou 'min' para minimização.
+            c (np.ndarray): Vetor dos coeficientes da função objetivo (custos das variáveis de decisão).
+            A (np.ndarray): Matriz das restrições (m linhas por n colunas).
+            B_idx (list): Lista de índices das variáveis básicas iniciais.
+            N_idx (list): Lista de índices das variáveis não básicas iniciais.
+            b (np.ndarray): Vetor do lado direito das restrições (recursos disponíveis).
+            verbose (bool, optional): Se True, exibe informações detalhadas sobre o progresso do algoritmo (o padrão é False).
+        Return:
+            Tuple:
+                - x (np.ndarray): Vetor solução do problema (valores das variáveis de decisão).
+                - z (float): Valor da função objetivo na solução ótima.
+        Raises:
+            ValueError: Caso o problema seja ilimitado (não há solução ótima finita).
+    '''
+        
+    # Variável booleana que guardará o tipo do problema, isto é, maximização ou minimização.
     maximize = True if problem_type.lower() == 'max' else False
     
+    # Obtem e armazena o número de restrições (m) e o número de variáveis de decisão (n).
     m, n = A.shape
     
-    # Inicializar B
+    # Inicializa a matriz B com base nos índices da solução básica inicial (B_idx).
     B = A[:, B_idx]
 
-    print(c)
-    
-    if verbose:
-        print("------------------------------------------- Depuração -------------------------------------------\n")
-
     while True:
-        if verbose:
-            print(f"B indices: {B_idx}, N indices: {N_idx}")
-
-        # Fatoração LU de B
+        # Realiza a fatoração LU da matriz B
         lu, piv = lu_factor(B)
 
-        # Resolve B * x_B = b
+        # Resolve o sistema linear B * x_B = b utilizando a decomposição LU da matriz B.
         x_B = lu_solve((lu, piv), b)
 
-        # Computa custos reduzidos
+        # Computa os custos reduzidos.
         c_B = c[B_idx]
         c_N = c[N_idx]
         lambda_ = c_B.T @ lu_solve((lu, piv), np.eye(m))
         reduced_costs = c_N - lambda_ @ A[:, N_idx]
 
-        if verbose:
-            print(f"Reduced costs: {reduced_costs}\n")
-
-        # Verifica otimalidade
-        if maximize and np.all(reduced_costs <= 1e-8):
+        # Verifica otimalidade.
+        if maximize and np.all(reduced_costs <= 1e-8): 
             x = np.zeros(n)
             x[B_idx] = x_B
             z = c.T @ x
@@ -197,36 +231,36 @@ def simplex_revised(problem_type, c, A, B_idx, N_idx, b, verbose=False):
         elif not maximize and np.all(reduced_costs >= -1e-8):
             x = np.zeros(n)
             x[B_idx] = x_B
-            z = c.T @ x
+            z = c.T @ x  
             return x, z
 
-        # Escolhe uma variável para entrar na base
+        # Escolhe uma variável para entrar na base.
         if maximize:
             entering_idx = N_idx[np.argmax(reduced_costs)]
         else:
             entering_idx = N_idx[np.argmin(reduced_costs)]
         
-        # Computa a direção p = B^-1 * A_j
+        # Computa a direção p = B^-1 * A_j.
         p = lu_solve((lu, piv), A[:, entering_idx])
 
         if np.all(p <= 0):
-            if verbose:
-                print("------------------------------------------- --------- -------------------------------------------\n")
-                
+            # Exibe um erro indicando que o problema em questão é ilimitado.
             raise ValueError("Problema ilimitado.")
 
-        # Regra de razão mínima com supressão de warning
+        # Realiza a regra de razão mínima para saber quem sai da base (com supressão de eventuais warnings por haver 0's em p).
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             ratios = np.where(p > 0, x_B / p, np.inf)
-            
         leaving_idx = B_idx[np.argmin(ratios)]
 
-        # Atualiza a base
+        # Caso verbose seja igual à True, exibe um log com algumas informações da iteração atual do método.
+        simplex_log(B_idx, N_idx, reduced_costs, entering_idx, leaving_idx, verbose)
+        
+        # Atualiza a base.
         B_idx[B_idx.index(leaving_idx)] = entering_idx
         N_idx[N_idx.index(entering_idx)] = leaving_idx
         B = A[:, B_idx]
-
+        
 def simplex_revised_two_phases(problem_type, c, A, b, relations):
     '''
         Description:

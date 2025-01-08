@@ -79,7 +79,7 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
             relations (List[str]): Lista de relações das restrições (e.g., '<=', '>=' ou '=').
             b (np.ndarray): Vetor de valores dos recursos.
             decision_variables_limits (str): Limites das variáveis de decisão.
-        Returns:
+        Return:
             None
     """
 
@@ -89,7 +89,7 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
                 Formata uma equação (função ou restrição) para exibição na forma padrão.
             Args:
                 coeffs (np.ndarray): Coeficientes da equação.
-            Returns:
+            Return:
                 str: Equação formatada.
         """
 
@@ -107,38 +107,45 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
     # Exibe os limites das variáveis de decisão
     print(f"\t{decision_variables_limits}\n")
     
-def preprocess_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
+def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, 
+                       decision_variables_limits: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
     '''
         Description:
-
+            Preprocessa o problema de otimização linear para adequá-lo ao formato padrão. Isso inclui a adição 
+            de variáveis artificiais (e/ou variáveis de folga/excesso) e ajustes nas relações
+            entre as restrições, para garantir que todas sejam do tipo igualdade (==).
+            
         Args:
+            problem_type (str): String indicando o tipo do problema ('max' ou 'min').
+            c (np.ndarray): Vetor que contém os coeficientes de custo das variáveis de decisão.
+            A (np.ndarray): Matriz que contém os coeficientes das restrições.
+            relations (List[str]): Lista de strings que indicam as relações ('<=', '==', '>=') entre as restrições e os recursos.
+            b (np.ndarray): Vetor que contém os valores dos recursos para cada restrição.
+            decision_variables_limits (str): String que representa os limites das variáveis de decisão.
 
         Return:
+            c (np.ndarray): Vetor de custos atualizado com as variáveis artificiais adicionadas.
+            A (np.ndarray): Matriz de coeficientes das restrições, ajustada para o formato padrão.
+            relations (List[str]): Lista atualizada de relações, convertendo todas para o tipo igualdade ('==').
+            decision_variables_limits (str): Limites das variáveis de decisão.
     '''
     
     if all(elemento == "<=" for elemento in relations) or all(elemento == "==" for elemento in relations):
-        #
-        m = b.shape[0]
-        #
-        A = np.hstack((A, np.eye(m)))
-        #
-        c = np.concatenate((c, np.zeros(m)))
-        #
-        relations = ["==" for _ in range(len(relations))]
+        # Caso todas as restrições sejam do tipo "<=" ou "==", adiciona variáveis de folga.
+        m = b.shape[0] # Número de restrições
+        A = np.hstack((A, np.eye(m))) # Adiciona variáveis de folga (matriz identidade).
+        c = np.concatenate((c, np.zeros(m))) # Adiciona custos nulos para as variáveis de folga.
+        relations = ["==" for _ in range(len(relations))] # Converte todas as relações para "==".
     
     if all(elemento == ">=" for elemento in relations):
-        #
-        m = b.shape[0]
-        #
-        A = np.hstack((A, -1*np.eye(m)))
-        #
-        A = np.hstack((A, np.eye(m)))
-        #
-        c = np.concatenate((c, np.zeros(2*m)))
-        #
-        relations = ["==" for _ in range(len(relations))]
+        # Caso todas as restrições sejam do tipo ">=", adiciona variáveis de excesso e folga.
+        m = b.shape[0] # Número de restrições
+        A = np.hstack((A, -1*np.eye(m))) # Adiciona variáveis de excesso (matriz identidade negativa).
+        A = np.hstack((A, np.eye(m))) # Adiciona variáveis artificiais (matriz identidade positiva).
+        c = np.concatenate((c, np.zeros(2*m))) # Adiciona custos nulos para as novas variáveis.
+        relations = ["==" for _ in range(len(relations))] # Converte todas as relações para "==".
 
-    return problem_type, c, A, relations, b, decision_variables_limits
+    return c, A, relations, decision_variables_limits
 
 def simplex_revised(problem_type, c, A, B_idx, N_idx, b, verbose=False):
     '''
@@ -275,8 +282,7 @@ def main():
             show_problem(problem_type, c, A, original_relations, b, decision_variables_limits)
             
             #
-            problem_type, c, A, relations, b, decision_variables_limits = preprocess_problem(problem_type, c, A, 
-                                                                                                original_relations, b, decision_variables_limits)
+            c, A, relations, decision_variables_limits = preprocess_problem(c, A, original_relations, b, decision_variables_limits)
 
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
             show_problem(problem_type, c, A, relations, b, decision_variables_limits)

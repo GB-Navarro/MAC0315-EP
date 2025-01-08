@@ -8,9 +8,6 @@ import warnings
 import numpy as np
 #
 from typing import Tuple, List
-#
-from scipy.linalg import lu_factor, lu_solve # Biblioteca temporária
-
 
 def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
     '''
@@ -144,6 +141,7 @@ def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np
         c = np.concatenate((c, np.zeros(2*m))) # Adiciona custos nulos para as novas variáveis.
         relations = ["==" for _ in range(len(relations))] # Converte todas as relações para "==".
 
+
     return c, A, relations, decision_variables_limits
 
 def simplex_log(B_idx: list, N_idx: list, reduced_costs: np.ndarray, entering_index: int, leaving_index: int, verbose: bool) -> None:
@@ -175,6 +173,121 @@ def simplex_log(B_idx: list, N_idx: list, reduced_costs: np.ndarray, entering_in
         
         # Imprime o índice da variável que está saindo da base.
         print(f"Leaving index: {leaving_index}\n")
+
+def lu_decomposition(A: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+        Description:
+            Realiza a decomposição LU de uma matriz A com pivotamento parcial. 
+            A decomposição LU fatoriza a matriz A em três componentes: 
+            uma matriz de permutação P, uma matriz triangular inferior L e uma matriz triangular superior U,
+            tal que P @ A = L @ U. O pivotamento parcial é utilizado para evitar problemas de estabilidade
+            numérica em matrizes mal condicionadas ou com pivôs zero.
+        Args:
+            A (np.ndarray): Matriz quadrada a ser fatorada (dimensão n x n).
+        Return:
+            Tuple:
+                - P (np.ndarray): Matriz de permutação (n x n), que indica as trocas de linhas realizadas.
+                - L (np.ndarray): Matriz triangular inferior (n x n), com 1's na diagonal principal.
+                - U (np.ndarray): Matriz triangular superior (n x n), obtida após a eliminação Gaussiana.
+        Raises:
+            ValueError: Caso o pivotamento parcial não consiga evitar um pivô zero, impossibilitando a decomposição.
+        Notes:
+            - Este método assume que A é uma matriz quadrada. Caso contrário, deve ser adaptado.
+            - A matriz P é tal que o produto P @ A reordena as linhas de A para permitir o maior pivô possível
+              em cada etapa.
+    """
+    
+    n = A.shape[0] # Obtém a dimensão da matriz quadrada A (n x n).
+    
+    # Inicializa as matrizes:
+    # P: Matriz de permutação como a matriz identidade (sem trocas iniciais).
+    # L: Matriz triangular inferior zerada (os fatores de eliminação serão preenchidos posteriormente).
+    # U: Cópia da matriz A, que será transformada em uma matriz triangular superior.
+    P = np.eye(n)
+    L = np.zeros((n, n))
+    U = A.copy()
+
+    # Realiza a eliminação Gaussiana com pivotamento parcial.
+    for i in range(n):
+        # Pivotamento parcial: Identifica a linha com o maior valor absoluto na coluna atual (i)
+        # para evitar divisões por pivôs muito pequenos ou zero.
+        max_row = np.argmax(np.abs(U[i:, i])) + i
+        if i != max_row:
+            # Troca as linhas i e max_row em U e P.
+            U[[i, max_row]] = U[[max_row, i]]
+            P[[i, max_row]] = P[[max_row, i]]
+            # Garante que L também seja atualizado para refletir a troca de linhas.
+            L[[i, max_row], :i] = L[[max_row, i], :i]
+
+        # Verifica se o pivô (U[i, i]) é zero após o pivotamento.
+        # Se for zero, a matriz é singular e a decomposição não pode continuar.
+        if U[i, i] == 0:
+            raise ValueError("Decomposição LU não é possível devido a pivô zero, mesmo após pivotamento.")
+
+        # Eliminação de Gauss:
+        # Para cada linha abaixo da linha atual (i), calcula o fator de eliminação (L[j, i]) 
+        # e atualiza a matriz U.
+        for j in range(i + 1, n):
+            factor = U[j, i] / U[i, i] # Fator de eliminação para a linha j.
+            L[j, i] = factor # Armazena o fator de eliminação na matriz L.
+            U[j, i:] -= factor * U[i, i:] # Atualiza a linha j de U.
+
+    # Garante que a diagonal principal de L seja composta por 1's.
+    np.fill_diagonal(L, 1)
+    
+    return P, L, U
+
+def lu_solve(P: np.ndarray, L: np.ndarray, U: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+        Description:
+            Resolve o sistema linear Ax = b utilizando a decomposição LU com pivotamento parcial.
+            A solução é obtida em três etapas:
+            1. Aplica-se a matriz de permutação P ao vetor b, resultando no vetor permutado Pb.
+            2. Realiza-se a substituição para frente, resolvendo o sistema Ly = Pb.
+            3. Realiza-se a substituição para trás, resolvendo o sistema Ux = y.
+        Args:
+            P (np.ndarray): Matriz de permutação (n x n), obtida durante a decomposição LU.
+            L (np.ndarray): Matriz triangular inferior (n x n), com 1's na diagonal principal.
+            U (np.ndarray): Matriz triangular superior (n x n), obtida durante a decomposição LU.
+            b (np.ndarray): Vetor do lado direito do sistema (dimensão n).
+        Return:
+            x (np.ndarray): Solução do sistema linear (dimensão n), tal que Ax = b.
+        Notes:
+            - Este método é usado após realizar a decomposição LU de uma matriz A. 
+              Ele assume que as matrizes P, L e U estão corretamente fatoradas.
+            - A matriz A original é tal que P @ A = L @ U.
+            - Para evitar erros numéricos, a matriz U não deve ter valores muito próximos de zero na diagonal.
+        Complexity:
+            - Aplicação da permutação: O(n^2) para multiplicar P por b.
+            - Substituição para frente e para trás: O(n^2) cada, devido à natureza triangular das matrizes.
+        Raises:
+            ValueError: Caso algum elemento da diagonal de U seja zero, indicando que o sistema é singular
+            e não pode ser resolvido.
+    """
+    
+    # Aplica a matriz de permutação ao vetor b:
+    # - Reorganiza os elementos de b de acordo com as trocas realizadas durante o pivotamento parcial.
+    b_permuted = P @ b
+
+    # Substituição para frente:
+    # - Resolve Ly = Pb, utilizando a propriedade triangular inferior de L.
+    # - Calcula y[i] como o valor de b_permuted[i] menos a soma dos produtos dos elementos de L com os valores previamente calculados em y.
+    n = L.shape[0]
+    y = np.zeros_like(b_permuted, dtype=float)
+    for i in range(n):
+        y[i] = b_permuted[i] - np.dot(L[i, :i], y[:i])
+
+    # Substituição para trás:
+    # - Resolve Ux = y, utilizando a propriedade triangular superior de U.
+    # - Calcula x[i] como o valor de y[i] menos a soma dos produtos dos elementos de U
+    #   com os valores previamente calculados em x, dividido pelo pivô U[i, i].
+    x = np.zeros_like(b_permuted, dtype=float)
+    for i in range(n - 1, -1, -1):
+        if U[i, i] == 0:
+            raise ValueError("Sistema linear singular: pivô zero encontrado em U.")
+        x[i] = (y[i] - np.dot(U[i, i + 1:], x[i + 1:])) / U[i, i]
+
+    return x
 
 def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list, N_idx: list, 
                     b: np.ndarray, verbose: bool = False) -> Tuple[np.ndarray, float]:
@@ -210,15 +323,15 @@ def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list
 
     while True:
         # Realiza a fatoração LU da matriz B
-        lu, piv = lu_factor(B)
+        P, L, U = lu_decomposition(B)
 
         # Resolve o sistema linear B * x_B = b utilizando a decomposição LU da matriz B.
-        x_B = lu_solve((lu, piv), b)
+        x_B = lu_solve(P, L, U, b)
 
         # Computa os custos reduzidos.
         c_B = c[B_idx]
         c_N = c[N_idx]
-        lambda_ = c_B.T @ lu_solve((lu, piv), np.eye(m))
+        lambda_ = c_B.T @ lu_solve(P, L, U, np.eye(m))
         reduced_costs = c_N - lambda_ @ A[:, N_idx]
 
         # Verifica otimalidade.
@@ -240,7 +353,7 @@ def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list
             entering_idx = N_idx[np.argmin(reduced_costs)]
         
         # Computa a direção p = B^-1 * A_j.
-        p = lu_solve((lu, piv), A[:, entering_idx])
+        p = lu_solve(P, L, U, A[:, entering_idx])
 
         if np.all(p <= 0):
             # Exibe um erro indicando que o problema em questão é ilimitado.

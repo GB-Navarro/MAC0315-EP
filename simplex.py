@@ -140,7 +140,7 @@ def preprocess_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relation
 
     return problem_type, c, A, relations, b, decision_variables_limits
 
-def simplex_revised(c, A, b, verbose=False):
+def simplex_revised(problem_type, c, A, B_idx, N_idx, b, verbose=False):
     '''
         Description:
 
@@ -149,16 +149,19 @@ def simplex_revised(c, A, b, verbose=False):
         Return:
 
     '''
+    
+    maximize = True if problem_type.lower() == 'max' else False
+    
     m, n = A.shape
-    B_idx = list(range(n - m, n))
-    N_idx = list(range(n - m))
-
+    
     # Inicializar B
     B = A[:, B_idx]
 
+    print(c)
+    
     if verbose:
         print("------------------------------------------- Depuração -------------------------------------------\n")
-        
+
     while True:
         if verbose:
             print(f"B indices: {B_idx}, N indices: {N_idx}")
@@ -179,18 +182,22 @@ def simplex_revised(c, A, b, verbose=False):
             print(f"Reduced costs: {reduced_costs}\n")
 
         # Verifica otimalidade
-        if np.all(reduced_costs <= 1e-8):
+        if maximize and np.all(reduced_costs <= 1e-8):
             x = np.zeros(n)
             x[B_idx] = x_B
             z = c.T @ x
-            
-            if verbose:
-                print("------------------------------------------- --------- -------------------------------------------\n")
-        
+            return x, z
+        elif not maximize and np.all(reduced_costs >= -1e-8):
+            x = np.zeros(n)
+            x[B_idx] = x_B
+            z = c.T @ x
             return x, z
 
         # Escolhe uma variável para entrar na base
-        entering_idx = N_idx[np.argmax(reduced_costs)]
+        if maximize:
+            entering_idx = N_idx[np.argmax(reduced_costs)]
+        else:
+            entering_idx = N_idx[np.argmin(reduced_costs)]
         
         # Computa a direção p = B^-1 * A_j
         p = lu_solve((lu, piv), A[:, entering_idx])
@@ -213,6 +220,41 @@ def simplex_revised(c, A, b, verbose=False):
         N_idx[N_idx.index(entering_idx)] = leaving_idx
         B = A[:, B_idx]
 
+def simplex_revised_two_phases(problem_type, c, A, b, relations):
+    '''
+        Description:
+
+        Args:
+
+        Return:
+
+    '''
+    
+    # Passo 1: Converter desigualdades em igualdades e adicionar variáveis artificiais
+    m, n = A.shape
+    
+    phase1_N_idx = list(range(n - m))
+    c_phase1 = np.zeros(n-m)
+    c_phase1 = np.concatenate((c_phase1, np.ones(m)))
+
+    # Passo 2: Resolver Fase 1 para minimizar soma das variáveis artificiais
+    x_phase1, z_phase1 = simplex_revised('min',c_phase1, A, list(range(n - m, n)), phase1_N_idx,  b, True)
+    
+    B_idx = list(np.nonzero(x_phase1)[0])
+    N_idx = list(np.setdiff1d(list(range(n-m)), B_idx)) # (ESSE N_idx PODE SER CALCULADO DENTRO DA FUNÇÃO 'simplex_revised'!)
+
+    if z_phase1 > 1e-6:
+        raise ValueError("Problema inviável: as variáveis artificiais não podem ser eliminadas.")
+    
+    # Remover colunas correspondentes às variáveis artificiais
+    A = np.delete(A, list(range(n - m, n)), axis=1)
+    c = np.delete(c, list(range(n - m, n)))
+    
+    # Passo 3: Resolver Fase 2 com a função objetivo original
+    x_phase2, z_phase2 = simplex_revised(problem_type, c, A, B_idx, N_idx, b, True)
+
+    return x_phase2, z_phase2
+
 def main():
     
     if len(sys.argv) < 2:
@@ -226,23 +268,32 @@ def main():
             #
             content = file.read()
             #
-            problem_type, c, A, delimitators, b, decision_variables_limits = process_entry(content)
+            problem_type, c, A, original_relations, b, decision_variables_limits = process_entry(content)
             
             #
             print("O problema a ser resolvido é:\n")
-            show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
+            show_problem(problem_type, c, A, original_relations, b, decision_variables_limits)
             
             #
-            problem_type, c, A, delimitators, b, decision_variables_limits = preprocess_problem(problem_type, c, A, 
-                                                                                                delimitators, b, decision_variables_limits)
+            problem_type, c, A, relations, b, decision_variables_limits = preprocess_problem(problem_type, c, A, 
+                                                                                                original_relations, b, decision_variables_limits)
 
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
-            show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
+            show_problem(problem_type, c, A, relations, b, decision_variables_limits)
 
-            x, z = simplex_revised(c, A, b, True)
-            print(f"Solução ótima: {x}")
-            print(f"Valor ótimo: {z}")
-            
+            if all(relation == "<=" for relation in original_relations):
+                m, n = A.shape
+                B_idx = list(range(n - m, n))
+                N_idx = list(range(n - m))
+                x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b, True)
+                print(f"Solução ótima: {x}")
+                print(f"Valor ótimo: {z}")
+                
+            elif all(relation == ">=" for relation in original_relations) or all(relation == "==" for relation in original_relations):
+                x,z = simplex_revised_two_phases(problem_type,c,A,b,relations)
+                print(f"Solução ótima: {x}")
+                print(f"Valor ótimo: {z}")
+                
     except FileNotFoundError:
         print("Arquivo não encontrado")
         

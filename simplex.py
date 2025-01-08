@@ -116,7 +116,6 @@ def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np
             entre as restrições, para garantir que todas sejam do tipo igualdade (==).
             
         Args:
-            problem_type (str): String indicando o tipo do problema ('max' ou 'min').
             c (np.ndarray): Vetor que contém os coeficientes de custo das variáveis de decisão.
             A (np.ndarray): Matriz que contém os coeficientes das restrições.
             relations (List[str]): Lista de strings que indicam as relações ('<=', '==', '>=') entre as restrições e os recursos.
@@ -261,38 +260,63 @@ def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list
         N_idx[N_idx.index(entering_idx)] = leaving_idx
         B = A[:, B_idx]
         
-def simplex_revised_two_phases(problem_type, c, A, b, relations):
+def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, b: np.ndarray, verbose: bool = False) -> Tuple[np.ndarray, float]:
     '''
         Description:
-
+            Implementa o método simplex revisado em duas fases para resolver problemas de programação linear.
+            Este método é utilizado quando o problema possui desigualdades que precisam ser convertidas em igualdades
+            através da adição de variáveis artificiais. A Fase 1 busca uma solução inicial viável minimizando a soma
+            das variáveis artificiais, e a Fase 2 resolve o problema original.
         Args:
-
+            problem_type (str): Tipo do problema ('max' para maximização ou 'min' para minimização).
+            c (np.ndarray): Vetor dos coeficientes da função objetivo original.
+            A (np.ndarray): Matriz das restrições (m linhas por n colunas).
+            b (np.ndarray): Vetor do lado direito das restrições (recursos disponíveis).
+            verbose (bool, optional): Indica se informações detalhadas sobre o progresso do algoritmo devem ser exibidas (o padrão é False).
         Return:
-
+            Tuple:
+                - x_phase2 (np.ndarray): Vetor solução do problema original (valores das variáveis de decisão).
+                - z_phase2 (float): Valor da função objetivo na solução ótima do problema original.
+        Raises:
+            ValueError: Caso o problema seja inviável (não há solução viável) ou ilimitado (não há solução ótima finita).
     '''
     
-    # Passo 1: Converter desigualdades em igualdades e adicionar variáveis artificiais
+    # Obtém as dimensões da matriz A:
+    # m -> número de restrições (linhas), n -> número total de variáveis (colunas).
     m, n = A.shape
     
-    phase1_N_idx = list(range(n - m))
+    # Cria o vetor de custos para a Fase 1:
+    # - Primeiros (n-m) elementos correspondem a zeros (variáveis originais do problema).
+    # - Últimos m elementos correspondem a 1's (variáveis artificiais que serão minimizadas).
     c_phase1 = np.zeros(n-m)
     c_phase1 = np.concatenate((c_phase1, np.ones(m)))
 
-    # Passo 2: Resolver Fase 1 para minimizar soma das variáveis artificiais
-    x_phase1, z_phase1 = simplex_revised('min',c_phase1, A, list(range(n - m, n)), phase1_N_idx,  b, True)
+    # Resolve a Fase 1 para minimizar a soma das variáveis artificiais:
+    # - range(n - m, n): Índices das variáveis artificiais (inicialmente na base).
+    # - range(n - m): Índices das variáveis originais (inicialmente não básicas).
+    x_phase1, z_phase1 = simplex_revised('min',c_phase1, A, list(range(n - m, n)), list(range(n - m)),  b, True)
     
+    # Atualiza os índices das variáveis básicas (B_idx) e não básicas (N_idx):
+    # - B_idx: Índices das variáveis que possuem valor não nulo na solução inicial.
+    # - N_idx: Índices das variáveis restantes (não básicas).
     B_idx = list(np.nonzero(x_phase1)[0])
-    N_idx = list(np.setdiff1d(list(range(n-m)), B_idx)) # (ESSE N_idx PODE SER CALCULADO DENTRO DA FUNÇÃO 'simplex_revised'!)
+    N_idx = list(np.setdiff1d(list(range(n-m)), B_idx))
 
+    # Verifica a viabilidade do problema:
+    # - Se a soma das variáveis artificiais (z_phase1) for maior que um pequeno limite tolerável (~0),
+    #   isso indica que o problema é inviável, pois a solução viável inicial não existe.
     if z_phase1 > 1e-6:
         raise ValueError("Problema inviável: as variáveis artificiais não podem ser eliminadas.")
     
-    # Remover colunas correspondentes às variáveis artificiais
+    # Remove as colunas correspondentes às variáveis artificiais:
+    # - As colunas associadas às variáveis artificiais (índices de n-m a n) são removidas da matriz A.
+    # - Os custos correspondentes no vetor c também são eliminados.
     A = np.delete(A, list(range(n - m, n)), axis=1)
     c = np.delete(c, list(range(n - m, n)))
     
-    # Passo 3: Resolver Fase 2 com a função objetivo original
-    x_phase2, z_phase2 = simplex_revised(problem_type, c, A, B_idx, N_idx, b, True)
+    # Resolve a Fase 2 para encontrar a solução ótima do problema original:
+    # - Utiliza a solução viável inicial encontrada na Fase 1 (B_idx, N_idx) como ponto de partida.
+    x_phase2, z_phase2 = simplex_revised(problem_type, c, A, B_idx, N_idx, b, verbose)
 
     return x_phase2, z_phase2
 
@@ -330,7 +354,7 @@ def main():
                 print(f"Valor ótimo: {z}")
                 
             elif all(relation == ">=" for relation in original_relations) or all(relation == "==" for relation in original_relations):
-                x,z = simplex_revised_two_phases(problem_type,c,A,b,relations)
+                x,z = simplex_revised_two_phases(problem_type, c, A, b, True)
                 print(f"Solução ótima: {x}")
                 print(f"Valor ótimo: {z}")
                 

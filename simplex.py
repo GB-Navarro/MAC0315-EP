@@ -116,13 +116,25 @@ def preprocess_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relation
         Return:
     '''
     
-    if all(elemento == "<=" for elemento in relations):
+    if all(elemento == "<=" for elemento in relations) or all(elemento == "==" for elemento in relations):
         #
         m = b.shape[0]
         #
         A = np.hstack((A, np.eye(m)))
         #
         c = np.concatenate((c, np.zeros(m)))
+        #
+        relations = ["==" for _ in range(len(relations))]
+    
+    if all(elemento == ">=" for elemento in relations):
+        #
+        m = b.shape[0]
+        #
+        A = np.hstack((A, -1*np.eye(m)))
+        #
+        A = np.hstack((A, np.eye(m)))
+        #
+        c = np.concatenate((c, np.zeros(2*m)))
         #
         relations = ["==" for _ in range(len(relations))]
 
@@ -227,9 +239,11 @@ def main():
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
             show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
             
-            x, z = simplex_revised(c, A, b, True)
-            print(f"Solução ótima: {x}")
-            print(f"Valor ótimo: {z}")
+            print(f"A\n{A}")
+            print(f"b\n{b}")
+            #x, z = simplex_revised(c, A, b, True)
+            #print(f"Solução ótima: {x}")
+            #print(f"Valor ótimo: {z}")
             
     except FileNotFoundError:
         print("Arquivo não encontrado")

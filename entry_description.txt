@@ -15,3 +15,4 @@ am1 am2 ... amn (<= || == || >=) bm
 
 # IMPORTANTE: Problemas que fujam a esse formato não serão interpretados corretamente pelo programa.
 # IMPORTANTE: Cuidado com espaços vazios indevidos na hora de escrever o problema, eles não serão tratados pelo programa.
+# IMPORTANTE: O método foi implementado para funcionar apenas com um tipo de restrição por problema, ou seja, os problemas devem ter todas as restrições ou do tipo ">=" ou do tipo "<=" ou do tipo "==".

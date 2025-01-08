@@ -238,12 +238,10 @@ def main():
 
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
             show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
-            
-            print(f"A\n{A}")
-            print(f"b\n{b}")
-            #x, z = simplex_revised(c, A, b, True)
-            #print(f"Solução ótima: {x}")
-            #print(f"Valor ótimo: {z}")
+
+            x, z = simplex_revised(c, A, b, True)
+            print(f"Solução ótima: {x}")
+            print(f"Valor ótimo: {z}")
             
     except FileNotFoundError:
         print("Arquivo não encontrado")

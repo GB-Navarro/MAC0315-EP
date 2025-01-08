@@ -1,7 +1,16 @@
-import sys
+#
 import re
+#
+import sys
+#
+import warnings
+#
 import numpy as np
+#
 from typing import Tuple, List
+#
+from scipy.linalg import lu_factor, lu_solve # Biblioteca temporária
+
 
 def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
     '''
@@ -118,7 +127,80 @@ def preprocess_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relation
         relations = ["==" for _ in range(len(relations))]
 
     return problem_type, c, A, relations, b, decision_variables_limits
+
+def simplex_revised(c, A, b, verbose=False):
+    '''
+        Description:
+
+        Args:
+
+        Return:
+
+    '''
+    m, n = A.shape
+    B_idx = list(range(n - m, n))
+    N_idx = list(range(n - m))
+
+    # Inicializar B
+    B = A[:, B_idx]
+
+    if verbose:
+        print("------------------------------------------- Depuração -------------------------------------------\n")
         
+    while True:
+        if verbose:
+            print(f"B indices: {B_idx}, N indices: {N_idx}")
+
+        # Fatoração LU de B
+        lu, piv = lu_factor(B)
+
+        # Resolve B * x_B = b
+        x_B = lu_solve((lu, piv), b)
+
+        # Computa custos reduzidos
+        c_B = c[B_idx]
+        c_N = c[N_idx]
+        lambda_ = c_B.T @ lu_solve((lu, piv), np.eye(m))
+        reduced_costs = c_N - lambda_ @ A[:, N_idx]
+
+        if verbose:
+            print(f"Reduced costs: {reduced_costs}\n")
+
+        # Verifica otimalidade
+        if np.all(reduced_costs <= 1e-8):
+            x = np.zeros(n)
+            x[B_idx] = x_B
+            z = c.T @ x
+            
+            if verbose:
+                print("------------------------------------------- --------- -------------------------------------------\n")
+        
+            return x, z
+
+        # Escolhe uma variável para entrar na base
+        entering_idx = N_idx[np.argmax(reduced_costs)]
+        
+        # Computa a direção p = B^-1 * A_j
+        p = lu_solve((lu, piv), A[:, entering_idx])
+
+        if np.all(p <= 0):
+            if verbose:
+                print("------------------------------------------- --------- -------------------------------------------\n")
+                
+            raise ValueError("Problema ilimitado.")
+
+        # Regra de razão mínima com supressão de warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            ratios = np.where(p > 0, x_B / p, np.inf)
+            
+        leaving_idx = B_idx[np.argmin(ratios)]
+
+        # Atualiza a base
+        B_idx[B_idx.index(leaving_idx)] = entering_idx
+        N_idx[N_idx.index(entering_idx)] = leaving_idx
+        B = A[:, B_idx]
+
 def main():
     
     if len(sys.argv) < 2:
@@ -144,6 +226,10 @@ def main():
 
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
             show_problem(problem_type, c, A, delimitators, b, decision_variables_limits)
+            
+            x, z = simplex_revised(c, A, b, True)
+            print(f"Solução ótima: {x}")
+            print(f"Valor ótimo: {z}")
             
     except FileNotFoundError:
         print("Arquivo não encontrado")

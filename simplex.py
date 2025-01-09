@@ -602,7 +602,7 @@ def main():
             print(f"Solução ótima: {' '.join([f'{var} = {coeff:.2f}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
             print(f"\nValor ótimo:   Z = {z:.2f}")
             elapsed = time.time() - start # Horário em que o problema terminou de ser resolvido.
-            print(f"\nO tempo decorrido para resolver o problema em questão foi de: {elapsed:.6f} segundos") # Exibe o tempo decorrido para resolver o problema em questão.
+            print(f"\nO tempo decorrido para resolver o problema em questão foi: {elapsed:.6f} segundos") # Exibe o tempo decorrido para resolver o problema em questão.
             
     # Tratamento de exceções:
     except FileNotFoundError:

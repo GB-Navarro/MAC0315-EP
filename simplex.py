@@ -18,6 +18,7 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
         Return:
             problem_type (str): String (max || min) que representa o tipo do problema, isto é, maximização ou minimização.
             c (np.ndarray): Vetor que contém os coeficientes que representam os custos de cada uma das n variáveis de decisão.
+            variables (list):
             A (np.ndarray): Matriz que contém os coeficientes de cada uma das m restrições.
             relations (list): Lista que contém as relações entre cada uma das restrições e seus respectivos recursos.
             b (np.ndarray): Vetor que contém o valor de cada um dos recursos...
@@ -63,15 +64,19 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
     A = np.array(A)
     b = np.array(b)
 
-    return problem_type, c, A, relations, b, decision_variables_limits
+    #
+    variables = [f"x{i+1}" for i in range(len(c))]
+    
+    return problem_type, c, variables, A, relations, b, decision_variables_limits
 
-def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> None:
+def show_problem(problem_type: str, c: np.ndarray, variables: list, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> None:
     """
         Description:
             Exibe o problema de programação linear na forma padrão.
         Args:
             problem_type (str): Tipo do problema ('max' para maximização ou 'min' para minimização).
             c (np.ndarray): Vetor de coeficientes da função objetivo.
+            variables (list):
             A (np.ndarray): Matriz de coeficientes das restrições.
             relations (List[str]): Lista de relações das restrições (e.g., '<=', '>=' ou '=').
             b (np.ndarray): Vetor de valores dos recursos.
@@ -80,32 +85,35 @@ def show_problem(problem_type: str, c: np.ndarray, A: np.ndarray, relations: Lis
             None
     """
 
-    def format_equation(coeffs: np.ndarray) -> str:
+    def format_equation(coeffs: np.ndarray, variables: list) -> str:
         """
             Description:
                 Formata uma equação (função ou restrição) para exibição na forma padrão.
             Args:
                 coeffs (np.ndarray): Coeficientes da equação.
+                variables (list):
             Return:
                 str: Equação formatada.
         """
 
-        return " ".join(f"{'-' if coeff < 0 else ('+' if (coeff >= 0 and idx > 0) else '')} {abs(coeff):.2f}x{idx + 1}" for idx, coeff in enumerate(coeffs)).strip()
+        return " ".join(f"{'-' if coeff < 0 else ('+' if (coeff >= 0 and idx > 0) else '')} {abs(coeff):.2f}{variables[idx]}" for idx, coeff in enumerate(coeffs)).strip()
 
     # Exibe o tipo do problema
     problem_type_text = "Maximizar" if problem_type.lower() == "max" else "Minimizar"
-    print(f"{problem_type_text} Z = {format_equation(c)}\n")
+    print(f"{problem_type_text} Z = {format_equation(c, variables)}\n")
 
     # Exibe as restrições
     print("Sujeito a:")
     for coeffs, relation, resource in zip(A, relations, b):
-        print(f"\t{format_equation(coeffs)} {relation} {resource:.2f}")
+        tab = '\t' if coeffs[0] >= 0 else '      '
+        print(f"{tab}{format_equation(coeffs, variables)} {relation} {resource:.2f}")
+
 
     # Exibe os limites das variáveis de decisão
     print(f"\t{decision_variables_limits}\n")
     
-def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, 
-                       decision_variables_limits: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
+#def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, 
+#                       decision_variables_limits: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
     '''
         Description:
             Preprocessa o problema de otimização linear para adequá-lo ao formato padrão. Isso inclui a adição 
@@ -126,6 +134,7 @@ def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np
             decision_variables_limits (str): Limites das variáveis de decisão.
     '''
     
+    '''
     if all(elemento == "<=" for elemento in relations) or all(elemento == "==" for elemento in relations):
         # Caso todas as restrições sejam do tipo "<=" ou "==", adiciona variáveis de folga.
         m = b.shape[0] # Número de restrições
@@ -143,6 +152,122 @@ def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np
 
 
     return c, A, relations, decision_variables_limits
+    '''
+    
+def preprocess_problem(
+    c: np.ndarray, 
+    variables: list,
+    A: np.ndarray, 
+    relations: List[str], 
+    b: np.ndarray, 
+    decision_variables_limits: List[Tuple[float, float]]
+) -> Tuple[np.ndarray, np.ndarray, List[str], np.ndarray, bool]:
+    """
+    Description:
+        Preprocessa o problema de programação linear para adequá-lo ao formato padrão.
+        Trata limites das variáveis de decisão, converte restrições para igualdades,
+        adiciona variáveis de folga/excesso e identifica a necessidade do método das duas fases.
+
+    Args:
+        c (np.ndarray): Vetor de custos das variáveis de decisão.
+        variables (list):
+        A (np.ndarray): Matriz de coeficientes das restrições.
+        relations (List[str]): Lista indicando as relações ('<=', '==', '>=') entre as restrições e b.
+        b (np.ndarray): Vetor de recursos disponíveis para as restrições.
+        decision_variables_limits (List[Tuple[float, float]]): Limites das variáveis de decisão (i, j) onde i ≤ x ≤ j.
+
+    Returns:
+        Tuple:
+            - c (np.ndarray): Vetor de custos atualizado com as novas variáveis.
+            - variables (list):
+            - A (np.ndarray): Matriz de coeficientes ajustada.
+            - relations (list[str]): Lista de relações convertida para igualdades.
+            - b (np.ndarray): Vetor de recursos ajustado.
+            - artificial_variables_columns_indexes (list):
+            - slack_variables_columns_indexes (list):
+            - requires_two_phases (bool): Indica se o método das duas fases será necessário.
+    """
+    n = A.shape[1]  # Número de restrições e variáveis
+    
+    #
+    if decision_variables_limits != 'xi >= 0':
+        lower_value, upper_value = np.float64(decision_variables_limits.split(" <= xi <= ")[0]), np.float64(decision_variables_limits.split(" <= xi <= ")[1])
+        
+        for i in range(n):
+            #
+            if not np.isinf(lower_value):  
+                new_row = np.zeros(n)
+                new_row[i] = 1  # -x_i >= -lower
+                A = np.vstack([A, new_row])
+                b = np.append(b, lower_value)
+                relations.append(">=")
+            #    
+            if not np.isinf(upper_value):
+                new_row = np.zeros(n)
+                new_row[i] = 1  # x_i <= upper
+                A = np.vstack([A, new_row])
+                b = np.append(b, upper_value)
+                relations.append("<=")
+    
+    # 2. Verificar e ajustar restrições com recursos negativos
+    for i in range(len(b)):
+        if b[i] < 0:
+            A[i, :] *= -1
+            b[i] *= -1
+            if relations[i] == "<=":
+                relations[i] = ">="
+            elif relations[i] == ">=":
+                relations[i] = "<="
+    
+    #
+    artificial_variables_rows_indexes = [index for index in range(len(relations)) if (relations[index] == "==" or relations[index] == ">=")]
+    #
+    artificial_variables_columns_indexes = []
+    #
+    requires_two_phases = True if len(artificial_variables_rows_indexes) > 0 else False
+    
+    # 3. Adicionar variáveis de folga e excesso 
+    slack_variables_rows_indexes = []
+    #
+    slack_variables_columns_indexes = []
+    #
+    slack_variable_index_count = 1
+    excess_variable_index_count = 1
+    for i, relation in enumerate(relations):
+        if relation == "<=":  # Adicionar variável de folga
+            slack_variable = np.zeros((A.shape[0], 1))
+            slack_variable[i, 0] = 1
+            slack_variables_columns_indexes.append(A.shape[1])
+            A = np.hstack([A, slack_variable])
+            c = np.append(c, 0)
+            relations[i] = "=="
+            variables.append(f"s{slack_variable_index_count}")
+            slack_variable_index_count += 1
+            slack_variables_rows_indexes.append(i)
+        elif relation == ">=":  # Adicionar variável de excesso
+            excess_variable = np.zeros((A.shape[0], 1))
+            excess_variable[i, 0] = -1
+            A = np.hstack([A, excess_variable])
+            c = np.append(c, 0)
+            relations[i] = "=="
+            variables.append(f"e{excess_variable_index_count}")
+            excess_variable_index_count += 1
+    
+    # 4. Adicionar variáveis artificiais apenas se necessário
+    if requires_two_phases:
+        #
+        artificial_variable_index_count = 1
+        for index in artificial_variables_rows_indexes:
+            artificial_variable = np.zeros((A.shape[0],1))
+            artificial_variable[index,0] = 1
+            artificial_variables_columns_indexes.append(A.shape[1])
+            A = np.hstack([A, artificial_variable])
+            c = np.append(c, 0)
+            variables.append(f"a{artificial_variable_index_count}")
+            artificial_variable_index_count += 1
+    
+    return c, A, relations, b, decision_variables_limits, artificial_variables_columns_indexes, slack_variables_columns_indexes, requires_two_phases
+
 
 def simplex_log(B_idx: list, N_idx: list, reduced_costs: np.ndarray, entering_index: int, leaving_index: int, verbose: bool) -> None:
     '''
@@ -373,7 +498,8 @@ def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list
         N_idx[N_idx.index(entering_idx)] = leaving_idx
         B = A[:, B_idx]
         
-def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, b: np.ndarray, verbose: bool = False) -> Tuple[np.ndarray, float]:
+def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, b: np.ndarray, B_idx_phase1: list,
+                               N_idx_phase1: list, variables: list, verbose: bool = False) -> Tuple[np.ndarray, float]:
     '''
         Description:
             Implementa o método simplex revisado em duas fases para resolver problemas de programação linear.
@@ -385,6 +511,9 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
             c (np.ndarray): Vetor dos coeficientes da função objetivo original.
             A (np.ndarray): Matriz das restrições (m linhas por n colunas).
             b (np.ndarray): Vetor do lado direito das restrições (recursos disponíveis).
+            B_idx_phase1 (list):
+            N_idx_phase1 (list):
+            variables (list):
             verbose (bool, optional): Indica se informações detalhadas sobre o progresso do algoritmo devem ser exibidas (o padrão é False).
         Return:
             Tuple:
@@ -394,26 +523,26 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
             ValueError: Caso o problema seja inviável (não há solução viável) ou ilimitado (não há solução ótima finita).
     '''
     
-    # Obtém as dimensões da matriz A:
-    # m -> número de restrições (linhas), n -> número total de variáveis (colunas).
-    m, n = A.shape
-    
+    #
+    non_artificial_variables_number = len([variable for variable in variables if variable[0] != "a"])
+    artificial_variables_number = A.shape[1] - non_artificial_variables_number
+
     # Cria o vetor de custos para a Fase 1:
     # - Primeiros (n-m) elementos correspondem a zeros (variáveis originais do problema).
     # - Últimos m elementos correspondem a 1's (variáveis artificiais que serão minimizadas).
-    c_phase1 = np.zeros(n-m)
-    c_phase1 = np.concatenate((c_phase1, np.ones(m)))
+    c_phase1 = np.zeros(non_artificial_variables_number)
+    c_phase1 = np.concatenate((c_phase1, np.ones(artificial_variables_number)))
 
     # Resolve a Fase 1 para minimizar a soma das variáveis artificiais:
     # - range(n - m, n): Índices das variáveis artificiais (inicialmente na base).
     # - range(n - m): Índices das variáveis originais (inicialmente não básicas).
-    x_phase1, z_phase1 = simplex_revised('min',c_phase1, A, list(range(n - m, n)), list(range(n - m)),  b, True)
+    x_phase1, z_phase1 = simplex_revised('min', c_phase1, A, B_idx_phase1, N_idx_phase1, b, verbose)
     
     # Atualiza os índices das variáveis básicas (B_idx) e não básicas (N_idx):
     # - B_idx: Índices das variáveis que possuem valor não nulo na solução inicial.
     # - N_idx: Índices das variáveis restantes (não básicas).
     B_idx = list(np.nonzero(x_phase1)[0])
-    N_idx = list(np.setdiff1d(list(range(n-m)), B_idx))
+    N_idx = list(np.setdiff1d(list(range(non_artificial_variables_number)), B_idx))
 
     # Verifica a viabilidade do problema:
     # - Se a soma das variáveis artificiais (z_phase1) for maior que um pequeno limite tolerável (~0),
@@ -424,8 +553,8 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
     # Remove as colunas correspondentes às variáveis artificiais:
     # - As colunas associadas às variáveis artificiais (índices de n-m a n) são removidas da matriz A.
     # - Os custos correspondentes no vetor c também são eliminados.
-    A = np.delete(A, list(range(n - m, n)), axis=1)
-    c = np.delete(c, list(range(n - m, n)))
+    A = np.delete(A, list(range(non_artificial_variables_number, non_artificial_variables_number + artificial_variables_number)), axis=1)
+    c = np.delete(c, list(range(non_artificial_variables_number, non_artificial_variables_number + artificial_variables_number)))
     
     # Resolve a Fase 2 para encontrar a solução ótima do problema original:
     # - Utiliza a solução viável inicial encontrada na Fase 1 (B_idx, N_idx) como ponto de partida.
@@ -446,31 +575,38 @@ def main():
             #
             content = file.read()
             #
-            problem_type, c, A, original_relations, b, decision_variables_limits = process_entry(content)
+            problem_type, c, variables, A, original_relations, b, decision_variables_limits = process_entry(content)
+            
+            #
+            decision_variables_number = len(c)
             
             #
             print("O problema a ser resolvido é:\n")
-            show_problem(problem_type, c, A, original_relations, b, decision_variables_limits)
+            show_problem(problem_type, c, variables, A, original_relations, b, decision_variables_limits)
             
             #
-            c, A, relations, decision_variables_limits = preprocess_problem(c, A, original_relations, b, decision_variables_limits)
+            c, A, relations, b, decision_variables_limits, artificial_variables_columns_indexes, \
+            slack_variables_columns_indexes, requires_two_phases = preprocess_problem(c, variables, A, original_relations, b, decision_variables_limits)
 
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
-            show_problem(problem_type, c, A, relations, b, decision_variables_limits)
+            show_problem(problem_type, c, variables, A, relations, b, decision_variables_limits)
 
-            if all(relation == "<=" for relation in original_relations):
-                m, n = A.shape
-                B_idx = list(range(n - m, n))
-                N_idx = list(range(n - m))
-                x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b, True)
-                print(f"Solução ótima: {x}")
-                print(f"Valor ótimo: {z}")
-                
-            elif all(relation == ">=" for relation in original_relations) or all(relation == "==" for relation in original_relations):
-                x,z = simplex_revised_two_phases(problem_type, c, A, b, True)
-                print(f"Solução ótima: {x}")
-                print(f"Valor ótimo: {z}")
-                
+            if requires_two_phases:
+                n = A.shape[1]
+                print("\nPara resolver o problema em questão, usaremos o simplex em duas fases.\n")
+                B_idx = artificial_variables_columns_indexes + slack_variables_columns_indexes
+                N_idx = list(np.setdiff1d(list(range(n)), B_idx))
+                x,z = simplex_revised_two_phases(problem_type, c, A, b, B_idx, N_idx, variables)
+                print(f"Solução ótima: {' '.join([f'{var} = {coeff}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
+                print(f"\nValor ótimo:   Z = {z}")
+            else:
+                n = A.shape[1]
+                B_idx = slack_variables_columns_indexes
+                N_idx = list(np.setdiff1d(list(range(n)), B_idx))
+                x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b)
+                print(f"Solução ótima: {' '.join([f'{var} = {coeff}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
+                print(f"\nValor ótimo: {z}")
+            
     except FileNotFoundError:
         print("Arquivo não encontrado")
         

@@ -542,6 +542,12 @@ def main():
     # Obtém o caminho do arquivo do primeiro argumento da linha de comando.
     file_path = sys.argv[1]
     
+    
+    # Verifica se o simplex deverá ser executado no modo verboso.
+    verbose = False
+    if len(sys.argv) > 2:
+        verbose = True if sys.argv[2].lower() == "true" else False
+    
     try:
         # 2. Lê o conteúdo do arquivo fornecido.
         with open(file_path, 'r') as file:
@@ -580,7 +586,7 @@ def main():
                 
                 start = time.time() # Horário em que o problema começou a ser resolvido.
                 # Resolve utilizando o método simplex em duas fases.
-                x,z = simplex_revised_two_phases(problem_type, c, A, b, B_idx, N_idx, variables)
+                x,z = simplex_revised_two_phases(problem_type, c, A, b, B_idx, N_idx, variables, verbose)
                 
             else: # Caso não seja necessário o método das duas fases. 
                 
@@ -590,13 +596,13 @@ def main():
                 
                 start = time.time()
                 # Resolve utilizando o método simplex revisado padrão.
-                x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b)
+                x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b, verbose)
             
             # 9. Exibe a solução ótima do problema.
             print(f"Solução ótima: {' '.join([f'{var} = {coeff:.2f}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
             print(f"\nValor ótimo:   Z = {z:.2f}")
             elapsed = time.time() - start # Horário em que o problema terminou de ser resolvido.
-            print(f"\nO tempo decorrido para resolver o problema em questão foi de: {elapsed:.4f} segundos") # Exibe o tempo decorrido para resolver o problema em questão.
+            print(f"\nO tempo decorrido para resolver o problema em questão foi de: {elapsed:.6f} segundos") # Exibe o tempo decorrido para resolver o problema em questão.
             
     # Tratamento de exceções:
     except FileNotFoundError:

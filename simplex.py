@@ -111,105 +111,64 @@ def show_problem(problem_type: str, c: np.ndarray, variables: list, A: np.ndarra
 
     # Exibe os limites das variáveis de decisão
     print(f"\t{decision_variables_limits}\n")
-    
-#def preprocess_problem(c: np.ndarray, A: np.ndarray, relations: List[str], b: np.ndarray, 
-#                       decision_variables_limits: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
-    '''
-        Description:
-            Preprocessa o problema de otimização linear para adequá-lo ao formato padrão. Isso inclui a adição 
-            de variáveis artificiais (e/ou variáveis de folga/excesso) e ajustes nas relações
-            entre as restrições, para garantir que todas sejam do tipo igualdade (==).
-            
-        Args:
-            c (np.ndarray): Vetor que contém os coeficientes de custo das variáveis de decisão.
-            A (np.ndarray): Matriz que contém os coeficientes das restrições.
-            relations (List[str]): Lista de strings que indicam as relações ('<=', '==', '>=') entre as restrições e os recursos.
-            b (np.ndarray): Vetor que contém os valores dos recursos para cada restrição.
-            decision_variables_limits (str): String que representa os limites das variáveis de decisão.
-
-        Return:
-            c (np.ndarray): Vetor de custos atualizado com as variáveis artificiais adicionadas.
-            A (np.ndarray): Matriz de coeficientes das restrições, ajustada para o formato padrão.
-            relations (List[str]): Lista atualizada de relações, convertendo todas para o tipo igualdade ('==').
-            decision_variables_limits (str): Limites das variáveis de decisão.
-    '''
-    
-    '''
-    if all(elemento == "<=" for elemento in relations) or all(elemento == "==" for elemento in relations):
-        # Caso todas as restrições sejam do tipo "<=" ou "==", adiciona variáveis de folga.
-        m = b.shape[0] # Número de restrições
-        A = np.hstack((A, np.eye(m))) # Adiciona variáveis de folga (matriz identidade).
-        c = np.concatenate((c, np.zeros(m))) # Adiciona custos nulos para as variáveis de folga.
-        relations = ["==" for _ in range(len(relations))] # Converte todas as relações para "==".
-    
-    if all(elemento == ">=" for elemento in relations):
-        # Caso todas as restrições sejam do tipo ">=", adiciona variáveis de excesso e folga.
-        m = b.shape[0] # Número de restrições
-        A = np.hstack((A, -1*np.eye(m))) # Adiciona variáveis de excesso (matriz identidade negativa).
-        A = np.hstack((A, np.eye(m))) # Adiciona variáveis artificiais (matriz identidade positiva).
-        c = np.concatenate((c, np.zeros(2*m))) # Adiciona custos nulos para as novas variáveis.
-        relations = ["==" for _ in range(len(relations))] # Converte todas as relações para "==".
-
-
-    return c, A, relations, decision_variables_limits
-    '''
-    
+     
 def preprocess_problem(
     c: np.ndarray, 
     variables: list,
     A: np.ndarray, 
     relations: List[str], 
     b: np.ndarray, 
-    decision_variables_limits: List[Tuple[float, float]]
-) -> Tuple[np.ndarray, np.ndarray, List[str], np.ndarray, bool]:
+    decision_variables_limits: str
+) -> Tuple[np.ndarray, np.ndarray, List[str], np.ndarray, list, list, bool]:
     """
-    Description:
-        Preprocessa o problema de programação linear para adequá-lo ao formato padrão.
-        Trata limites das variáveis de decisão, converte restrições para igualdades,
-        adiciona variáveis de folga/excesso e identifica a necessidade do método das duas fases.
-
-    Args:
-        c (np.ndarray): Vetor de custos das variáveis de decisão.
-        variables (list):
-        A (np.ndarray): Matriz de coeficientes das restrições.
-        relations (List[str]): Lista indicando as relações ('<=', '==', '>=') entre as restrições e b.
-        b (np.ndarray): Vetor de recursos disponíveis para as restrições.
-        decision_variables_limits (List[Tuple[float, float]]): Limites das variáveis de decisão (i, j) onde i ≤ x ≤ j.
-
-    Returns:
-        Tuple:
-            - c (np.ndarray): Vetor de custos atualizado com as novas variáveis.
-            - variables (list):
-            - A (np.ndarray): Matriz de coeficientes ajustada.
-            - relations (list[str]): Lista de relações convertida para igualdades.
-            - b (np.ndarray): Vetor de recursos ajustado.
-            - artificial_variables_columns_indexes (list):
-            - slack_variables_columns_indexes (list):
-            - requires_two_phases (bool): Indica se o método das duas fases será necessário.
+        Description:
+            Preprocessa o problema de programação linear para adequá-lo ao formato padrão.
+            Trata limites das variáveis de decisão, converte restrições para igualdades,
+            adiciona variáveis de folga/excesso e identifica a necessidade do método das duas fases.
+        Args:
+            c (np.ndarray): Vetor de custos das variáveis de decisão.
+            variables (list): Lista contendo os nomes das variáveis do problema.
+            A (np.ndarray): Matriz de coeficientes das restrições.
+            relations (List[str]): Lista indicando as relações ('<=', '==', '>=') entre as restrições e b.
+            b (np.ndarray): Vetor de recursos disponíveis para as restrições.
+            decision_variables_limits (str): Limites das variáveis de decisão, onde i ≤ x ≤ j.
+        Returns:
+            Tuple:
+                - c (np.ndarray): Vetor de custos atualizado com as novas variáveis.
+                - A (np.ndarray): Matriz de coeficientes ajustada.
+                - relations (list[str]): Lista de relações convertida para igualdades.
+                - b (np.ndarray): Vetor de recursos ajustado.
+                - artificial_variables_columns_indexes (list): Índices das colunas que contêm variáveis artificiais.
+                - slack_variables_columns_indexes (list): Índices das colunas que contêm variáveis de folga.
+                - requires_two_phases (bool): Indica se o método das duas fases será necessário.
     """
-    n = A.shape[1]  # Número de restrições e variáveis
     
-    #
+    n = A.shape[1]  # Número de variáveis de decisão originais no problema.
+    
+    # 1. Ajusta os limites das variáveis de decisão:
+    # Para cada variável, se houver limites inferiores ou superiores definidos, 
+    # são adicionadas novas restrições para representar esses limites.
     if decision_variables_limits != 'xi >= 0':
         lower_value, upper_value = np.float64(decision_variables_limits.split(" <= xi <= ")[0]), np.float64(decision_variables_limits.split(" <= xi <= ")[1])
         
         for i in range(n):
-            #
+            # Adiciona uma nova restrição para representar o limite inferior, se existir.
             if not np.isinf(lower_value):  
                 new_row = np.zeros(n)
-                new_row[i] = 1  # -x_i >= -lower
+                new_row[i] = 1 
                 A = np.vstack([A, new_row])
                 b = np.append(b, lower_value)
                 relations.append(">=")
-            #    
+            # Adiciona uma nova restrição para representar o limite superior, se existir.    
             if not np.isinf(upper_value):
                 new_row = np.zeros(n)
-                new_row[i] = 1  # x_i <= upper
+                new_row[i] = 1 
                 A = np.vstack([A, new_row])
                 b = np.append(b, upper_value)
                 relations.append("<=")
     
-    # 2. Verificar e ajustar restrições com recursos negativos
+    # 2. Verifica e ajusta restrições com recursos negativos:
+    # Inverte o sinal de linhas em que b[i] é negativo, ajustando A e a relação correspondente.
     for i in range(len(b)):
         if b[i] < 0:
             A[i, :] *= -1
@@ -219,22 +178,20 @@ def preprocess_problem(
             elif relations[i] == ">=":
                 relations[i] = "<="
     
-    #
+    # 3. Identifica a necessidade de variáveis artificiais:
+    # Identifica restrições de igualdade ("==") ou maiores que (">=") que necessitam de variáveis artificiais.
     artificial_variables_rows_indexes = [index for index in range(len(relations)) if (relations[index] == "==" or relations[index] == ">=")]
-    #
     artificial_variables_columns_indexes = []
-    #
     requires_two_phases = True if len(artificial_variables_rows_indexes) > 0 else False
     
-    # 3. Adicionar variáveis de folga e excesso 
+    # 4. Adiciona variáveis de folga e excesso:
+    # Converte restrições para igualdades, adicionando variáveis de folga para "<=" e de excesso para ">=". 
     slack_variables_rows_indexes = []
-    #
     slack_variables_columns_indexes = []
-    #
     slack_variable_index_count = 1
     excess_variable_index_count = 1
     for i, relation in enumerate(relations):
-        if relation == "<=":  # Adicionar variável de folga
+        if relation == "<=":  # Adiciona variável de folga (s).
             slack_variable = np.zeros((A.shape[0], 1))
             slack_variable[i, 0] = 1
             slack_variables_columns_indexes.append(A.shape[1])
@@ -244,7 +201,7 @@ def preprocess_problem(
             variables.append(f"s{slack_variable_index_count}")
             slack_variable_index_count += 1
             slack_variables_rows_indexes.append(i)
-        elif relation == ">=":  # Adicionar variável de excesso
+        elif relation == ">=":  # Adiciona variável de excesso (e).
             excess_variable = np.zeros((A.shape[0], 1))
             excess_variable[i, 0] = -1
             A = np.hstack([A, excess_variable])
@@ -253,11 +210,11 @@ def preprocess_problem(
             variables.append(f"e{excess_variable_index_count}")
             excess_variable_index_count += 1
     
-    # 4. Adicionar variáveis artificiais apenas se necessário
+    # 5. Adiciona variáveis artificiais, se necessário:
+    # Para cada restrição que requer uma variável artificial, adiciona uma nova variável à matriz A.
     if requires_two_phases:
-        #
         artificial_variable_index_count = 1
-        for index in artificial_variables_rows_indexes:
+        for index in artificial_variables_rows_indexes: # Adiciona variáveis artificiais (a).
             artificial_variable = np.zeros((A.shape[0],1))
             artificial_variable[index,0] = 1
             artificial_variables_columns_indexes.append(A.shape[1])
@@ -499,7 +456,7 @@ def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list
         B = A[:, B_idx]
         
 def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, b: np.ndarray, B_idx_phase1: list,
-                               N_idx_phase1: list, variables: list, verbose: bool = False) -> Tuple[np.ndarray, float]:
+                               N_idx_phase1: list, variables: List[str], verbose: bool = False) -> Tuple[np.ndarray, float]:
     '''
         Description:
             Implementa o método simplex revisado em duas fases para resolver problemas de programação linear.
@@ -513,7 +470,7 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
             b (np.ndarray): Vetor do lado direito das restrições (recursos disponíveis).
             B_idx_phase1 (list): Índices das variáveis básicas na Fase 1 (variáveis inicialmente na solução).
             N_idx_phase1 (list): Índices das variáveis não básicas na Fase 1.
-            variables (list): Lista contendo as variáveis do problema, onde variáveis artificiais são identificadas pelo prefixo "a".
+            variables (List[str]): Lista contendo as variáveis do problema, onde variáveis artificiais são identificadas pelo prefixo "a".
             verbose (bool, optional): Indica se informações detalhadas sobre o progresso do algoritmo devem ser exibidas (o padrão é False).
         Return:
             Tuple:

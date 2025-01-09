@@ -72,11 +72,12 @@ def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str],
 def show_problem(problem_type: str, c: np.ndarray, variables: list, A: np.ndarray, relations: List[str], b: np.ndarray, decision_variables_limits: str) -> None:
     """
         Description:
-            Exibe o problema de programação linear na forma padrão.
+            Exibe o problema de programação linear na forma padrão, apresentando a função objetivo, as restrições
+            e os limites das variáveis de decisão.
         Args:
             problem_type (str): Tipo do problema ('max' para maximização ou 'min' para minimização).
             c (np.ndarray): Vetor de coeficientes da função objetivo.
-            variables (list):
+            variables (list): Lista contendo os nomes das variáveis do problema.
             A (np.ndarray): Matriz de coeficientes das restrições.
             relations (List[str]): Lista de relações das restrições (e.g., '<=', '>=' ou '=').
             b (np.ndarray): Vetor de valores dos recursos.
@@ -88,14 +89,15 @@ def show_problem(problem_type: str, c: np.ndarray, variables: list, A: np.ndarra
     def format_equation(coeffs: np.ndarray, variables: list) -> str:
         """
             Description:
-                Formata uma equação (função ou restrição) para exibição na forma padrão.
+                Formata uma equação (função ou restrição) para exibição na forma padrão, exibindo os coeficientes e
+                variáveis de forma legível.
             Args:
                 coeffs (np.ndarray): Coeficientes da equação.
-                variables (list):
+                variables (list): Lista com os nomes das variáveis correspondentes aos coeficientes.
             Return:
                 str: Equação formatada.
         """
-
+        # Constrói a equação como uma string com os coeficientes formatados (positivos e negativos).
         return " ".join(f"{'-' if coeff < 0 else ('+' if (coeff >= 0 and idx > 0) else '')} {abs(coeff):.2f}{variables[idx]}" for idx, coeff in enumerate(coeffs)).strip()
 
     # Exibe o tipo do problema
@@ -107,7 +109,6 @@ def show_problem(problem_type: str, c: np.ndarray, variables: list, A: np.ndarra
     for coeffs, relation, resource in zip(A, relations, b):
         tab = '\t' if coeffs[0] >= 0 else '      '
         print(f"{tab}{format_equation(coeffs, variables)} {relation} {resource:.2f}")
-
 
     # Exibe os limites das variáveis de decisão
     print(f"\t{decision_variables_limits}\n")

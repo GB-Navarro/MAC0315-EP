@@ -1,12 +1,7 @@
-#
 import re
-#
 import sys
-#
 import warnings
-#
 import numpy as np
-#
 from typing import Tuple, List
 
 def process_entry(content: str) -> Tuple[str, np.ndarray, np.ndarray, List[str], np.ndarray, str]:
@@ -522,55 +517,88 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
     return x_phase2, z_phase2
 
 def main():
+    """
+        Função principal para resolver problemas de programação linear.
+        Lê os dados de um arquivo, processa as entradas, ajusta o problema para a forma padrão,
+        e resolve utilizando o método simplex (com ou sem duas fases, dependendo do caso).
+
+        Steps:
+            1. Valida a existência de um argumento para o caminho do arquivo.
+            2. Lê o conteúdo do arquivo de entrada.
+            3. Processa as entradas para obter os parâmetros do problema.
+            4. Exibe o problema original.
+            5. Preprocessa o problema para convertê-lo à forma padrão.
+            6. Exibe o problema ajustado.
+            7. Resolve o problema com o método simplex adequado.
+            8. Exibe a solução ótima.
+    """
     
+    # 1. Verifica se o caminho do arquivo foi fornecido como argumento na execução.
     if len(sys.argv) < 2:
-        print("Forneça o caminho do arquivo!")
-        sys.exit(1)
+        print("Forneça o caminho do arquivo!") # Mensagem de erro caso o argumento esteja ausente.
+        sys.exit(1) # Encerra a execução com código de erro.
         
+    # Obtém o caminho do arquivo do primeiro argumento da linha de comando.
     file_path = sys.argv[1]
     
     try:
+        # 2. Lê o conteúdo do arquivo fornecido.
         with open(file_path, 'r') as file:
-            #
             content = file.read()
-            #
+            
+            # 3. Processa a entrada para extrair os parâmetros do problema.
+            # A função `process_entry` converte o conteúdo textual em variáveis do problema.
             problem_type, c, variables, A, original_relations, b, decision_variables_limits = process_entry(content)
             
-            #
+            # 4. Determina o número de variáveis de decisão no problema original.
             decision_variables_number = len(c)
             
-            #
+            # 5. Exibe o problema na sua forma original.
             print("O problema a ser resolvido é:\n")
             show_problem(problem_type, c, variables, A, original_relations, b, decision_variables_limits)
             
-            #
+            # 6. Preprocessa o problema, convertendo-o para a forma padrão.
+            # Isso inclui adicionar variáveis de folga, excesso e artificiais, se necessário.
             c, A, relations, b, decision_variables_limits, artificial_variables_columns_indexes, \
             slack_variables_columns_indexes, requires_two_phases = preprocess_problem(c, variables, A, original_relations, b, decision_variables_limits)
 
+            # 7. Exibe o problema ajustado para a forma padrão.
             print("Quando transformado para a forma padrão, o problema em questão se torna:\n")
             show_problem(problem_type, c, variables, A, relations, b, decision_variables_limits)
 
-            if requires_two_phases:
-                n = A.shape[1]
+            # 8. Resolve o problema usando o método simplex adequado (com ou sem duas fases).
+            
+            n = A.shape[1] # Número total de variáveis no problema ajustado.
+            
+            if requires_two_phases: # Caso seja necessário o método das duas fases.
                 print("\nPara resolver o problema em questão, usaremos o simplex em duas fases.\n")
+                
+                # Índices das variáveis básicas e não básicas.
                 B_idx = artificial_variables_columns_indexes + slack_variables_columns_indexes
                 N_idx = list(np.setdiff1d(list(range(n)), B_idx))
+                
+                # Resolve utilizando o método simplex em duas fases.
                 x,z = simplex_revised_two_phases(problem_type, c, A, b, B_idx, N_idx, variables)
-                print(f"Solução ótima: {' '.join([f'{var} = {coeff}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
-                print(f"\nValor ótimo:   Z = {z}")
-            else:
-                n = A.shape[1]
+                
+            else: # Caso não seja necessário o método das duas fases. 
+                
+                # Índices das variáveis básicas e não básicas (apenas folgas aqui).
                 B_idx = slack_variables_columns_indexes
                 N_idx = list(np.setdiff1d(list(range(n)), B_idx))
+                
+                # Resolve utilizando o método simplex revisado padrão.
                 x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b)
-                print(f"Solução ótima: {' '.join([f'{var} = {coeff}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
-                print(f"\nValor ótimo: {z}")
             
+            # 9. Exibe a solução ótima do problema.
+            print(f"Solução ótima: {' '.join([f'{var} = {coeff:.2f}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
+            print(f"\nValor ótimo:   Z = {z:.2f}")
+    
+    # Tratamento de exceções:
     except FileNotFoundError:
-        print("Arquivo não encontrado")
+        print("Arquivo não encontrado") # Erro ao tentar abrir um arquivo inexistente.
         
     except ValueError as e:
-        print(f"Erro: {e}")
+        print(f"Erro: {e}") # Erro ao processar o conteúdo do arquivo ou executar os métodos.
 
 if __name__ == "__main__":
     main()

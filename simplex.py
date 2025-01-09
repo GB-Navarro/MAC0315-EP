@@ -1,5 +1,6 @@
 import re
 import sys
+import time
 import warnings
 import numpy as np
 from typing import Tuple, List
@@ -577,6 +578,7 @@ def main():
                 B_idx = artificial_variables_columns_indexes + slack_variables_columns_indexes
                 N_idx = list(np.setdiff1d(list(range(n)), B_idx))
                 
+                start = time.time() # Horário em que o problema começou a ser resolvido.
                 # Resolve utilizando o método simplex em duas fases.
                 x,z = simplex_revised_two_phases(problem_type, c, A, b, B_idx, N_idx, variables)
                 
@@ -586,13 +588,16 @@ def main():
                 B_idx = slack_variables_columns_indexes
                 N_idx = list(np.setdiff1d(list(range(n)), B_idx))
                 
+                start = time.time()
                 # Resolve utilizando o método simplex revisado padrão.
                 x, z = simplex_revised(problem_type, c, A, B_idx, N_idx, b)
             
             # 9. Exibe a solução ótima do problema.
             print(f"Solução ótima: {' '.join([f'{var} = {coeff:.2f}' for var, coeff in zip(variables[:decision_variables_number], x[:decision_variables_number])])}")
             print(f"\nValor ótimo:   Z = {z:.2f}")
-    
+            elapsed = time.time() - start # Horário em que o problema terminou de ser resolvido.
+            print(f"\nO tempo decorrido para resolver o problema em questão foi de: {elapsed:.4f} segundos") # Exibe o tempo decorrido para resolver o problema em questão.
+            
     # Tratamento de exceções:
     except FileNotFoundError:
         print("Arquivo não encontrado") # Erro ao tentar abrir um arquivo inexistente.

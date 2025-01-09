@@ -484,7 +484,7 @@ def simplex_revised(problem_type: str, c: np.ndarray, A: np.ndarray, B_idx: list
             # Exibe um erro indicando que o problema em questão é ilimitado.
             raise ValueError("Problema ilimitado.")
 
-        # Realiza a regra de razão mínima para saber quem sai da base (com supressão de eventuais warnings por haver 0's em p).
+        # Realiza a regra de razão mínima para descobir qual variável sairá da base (com supressão de eventuais warnings por haver 0's em p).
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             ratios = np.where(p > 0, x_B / p, np.inf)
@@ -511,9 +511,9 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
             c (np.ndarray): Vetor dos coeficientes da função objetivo original.
             A (np.ndarray): Matriz das restrições (m linhas por n colunas).
             b (np.ndarray): Vetor do lado direito das restrições (recursos disponíveis).
-            B_idx_phase1 (list):
-            N_idx_phase1 (list):
-            variables (list):
+            B_idx_phase1 (list): Índices das variáveis básicas na Fase 1 (variáveis inicialmente na solução).
+            N_idx_phase1 (list): Índices das variáveis não básicas na Fase 1.
+            variables (list): Lista contendo as variáveis do problema, onde variáveis artificiais são identificadas pelo prefixo "a".
             verbose (bool, optional): Indica se informações detalhadas sobre o progresso do algoritmo devem ser exibidas (o padrão é False).
         Return:
             Tuple:
@@ -523,24 +523,25 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
             ValueError: Caso o problema seja inviável (não há solução viável) ou ilimitado (não há solução ótima finita).
     '''
     
-    #
+    # Número de variáveis não artificiais (exclui as variáveis artificiais adicionadas para a Fase 1).
     non_artificial_variables_number = len([variable for variable in variables if variable[0] != "a"])
+    # Número de variáveis artificiais (adicionadas para garantir viabilidade inicial do problema).
     artificial_variables_number = A.shape[1] - non_artificial_variables_number
 
-    # Cria o vetor de custos para a Fase 1:
-    # - Primeiros (n-m) elementos correspondem a zeros (variáveis originais do problema).
-    # - Últimos m elementos correspondem a 1's (variáveis artificiais que serão minimizadas).
+    # Criação do vetor de custos para a Fase 1:
+    # - Primeiros elementos correspondem a zeros (variáveis originais do problema).
+    # - Últimos elementos correspondem a 1's (variáveis artificiais que serão minimizadas na Fase 1).
     c_phase1 = np.zeros(non_artificial_variables_number)
     c_phase1 = np.concatenate((c_phase1, np.ones(artificial_variables_number)))
 
-    # Resolve a Fase 1 para minimizar a soma das variáveis artificiais:
-    # - range(n - m, n): Índices das variáveis artificiais (inicialmente na base).
-    # - range(n - m): Índices das variáveis originais (inicialmente não básicas).
+    # Fase 1: Minimiza a soma das variáveis artificiais para encontrar uma solução inicial viável.
+    # - B_idx_phase1: Variáveis artificiais inicialmente na base.
+    # - N_idx_phase1: Variáveis originais inicialmente fora da base.
     x_phase1, z_phase1 = simplex_revised('min', c_phase1, A, B_idx_phase1, N_idx_phase1, b, verbose)
     
-    # Atualiza os índices das variáveis básicas (B_idx) e não básicas (N_idx):
-    # - B_idx: Índices das variáveis que possuem valor não nulo na solução inicial.
-    # - N_idx: Índices das variáveis restantes (não básicas).
+    # Atualiza os índices das variáveis básicas e não básicas para a Fase 2:
+    # - B_idx: Variáveis que possuem valor não nulo na solução inicial encontrada.
+    # - N_idx: Variáveis restantes (não básicas).
     B_idx = list(np.nonzero(x_phase1)[0])
     N_idx = list(np.setdiff1d(list(range(non_artificial_variables_number)), B_idx))
 
@@ -550,9 +551,9 @@ def simplex_revised_two_phases(problem_type: str, c: np.ndarray, A: np.ndarray, 
     if z_phase1 > 1e-6:
         raise ValueError("Problema inviável: as variáveis artificiais não podem ser eliminadas.")
     
-    # Remove as colunas correspondentes às variáveis artificiais:
-    # - As colunas associadas às variáveis artificiais (índices de n-m a n) são removidas da matriz A.
-    # - Os custos correspondentes no vetor c também são eliminados.
+    # Remoção das variáveis artificiais:
+    # - As colunas da matriz A associadas às variáveis artificiais são eliminadas.
+    # - Os custos das variáveis artificiais também são removidos do vetor c.
     A = np.delete(A, list(range(non_artificial_variables_number, non_artificial_variables_number + artificial_variables_number)), axis=1)
     c = np.delete(c, list(range(non_artificial_variables_number, non_artificial_variables_number + artificial_variables_number)))
     

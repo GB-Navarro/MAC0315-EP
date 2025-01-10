@@ -1,0 +1,296 @@
+Lista 1 - Exercício 2.1
+
+	Execução 1:
+		Solução ótima: x1 = 6.00 x2 = 2.00 x3 = 0.00
+
+		Valor ótimo:   Z = 22.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001726 segundos
+
+	Execução 2:
+		Solução ótima: x1 = 6.00 x2 = 2.00 x3 = 0.00
+
+		Valor ótimo:   Z = 22.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001687 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 6.00 x2 = 2.00 x3 = 0.00
+
+		Valor ótimo:   Z = 22.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001747 segundos
+
+	Execução 4:
+		Solução ótima: x1 = 6.00 x2 = 2.00 x3 = 0.00
+
+		Valor ótimo:   Z = 22.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001937 segundos
+
+	Execução 5:
+		Solução ótima: x1 = 6.00 x2 = 2.00 x3 = 0.00
+
+		Valor ótimo:   Z = 22.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001997 segundos
+
+	Média de tempo das execuções: (0.001726 + 0.001687 + 0.001747 + 0.001937 + 0.001997)/5 =  0.0018188
+
+	Solução igual ao simplex do scipy ? Sim.
+
+
+Lista 1 - Exercício 2.2
+
+	Execução 1:
+		Solução ótima: x1 = 4.00 x2 = 0.00 x3 = 3.00
+
+		Valor ótimo:   Z = 29.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.007516 segundos
+
+	Execução 2:
+		Solução ótima: x1 = 4.00 x2 = 0.00 x3 = 3.00
+
+		Valor ótimo:   Z = 29.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001504 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 4.00 x2 = 0.00 x3 = 3.00
+
+		Valor ótimo:   Z = 29.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001511 segundos
+
+	Execução 4:
+		Solução ótima: x1 = 4.00 x2 = 0.00 x3 = 3.00
+
+		Valor ótimo:   Z = 29.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001533 segundos
+
+	Execução 5:
+		Solução ótima: x1 = 4.00 x2 = 0.00 x3 = 3.00
+
+		Valor ótimo:   Z = 29.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001691 segundos
+
+	Média de tempo das execuções: (0.007516 + 0.001504 + 0.001511 + 0.001533 + 0.001691)/5 = 0.002751
+
+	Solução igual ao simplex do scipy ? Sim.
+
+
+Lista 1 - Exercício 2.3
+
+	Execução 1:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 8.00
+
+		Valor ótimo:   Z = 16.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.008409 segundos
+
+	Execução 2:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 8.00
+
+		Valor ótimo:   Z = 16.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.004378 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 8.00
+
+		Valor ótimo:   Z = 16.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.003690 segundos
+
+	Execução 4:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 8.00
+
+		Valor ótimo:   Z = 16.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.003851 segundos
+
+	Execução 5:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 8.00
+
+		Valor ótimo:   Z = 16.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.003713 segundos
+
+	Média de tempo das execuções: (0.008409 + 0.004378 + 0.003690 + 0.003851 + 0.003713)/5 = 0.0048082
+
+	Solução igual ao simplex do scipy ? Sim.
+
+
+Lista 1 - Exercício 2.4
+
+	Execução 1:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 5.00
+
+		Valor ótimo:   Z = 20.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.007122 segundos
+
+	Execução 2:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 5.00
+
+		Valor ótimo:   Z = 20.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001120 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 5.00
+
+		Valor ótimo:   Z = 20.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001085 segundos
+
+	Execução 4:	
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 5.00
+
+		Valor ótimo:   Z = 20.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001081 segundos
+		
+	Execução 5:
+		Solução ótima: x1 = 0.00 x2 = 0.00 x3 = 5.00
+
+		Valor ótimo:   Z = 20.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.001083 segundos
+
+	Média de tempo das execuções: (0.007122 + 0.001120 + 0.001085 + 0.001081 + 0.001083)/5 = 0.0022982
+
+	Solução igual ao simplex do scipy ? O valor máximo de Z sim, os valores
+    de x1, x2 e x3 não. Mas não há problema nisso visto que a solução para
+    esse problema é uma reta (é possível ver isso ao escrever o problema no site http://reshmat.ru/)
+
+
+Lista 1 - Exercício 2.5
+
+	Execução 1:
+		Solução ótima: x1 = 2.28 x2 = 1.79 x3 = 1.03
+
+		Valor ótimo:   Z = 23.03
+
+		O tempo decorrido para resolver o problema em questão foi: 0.007564 segundos
+
+	Execução 2:
+		Solução ótima: x1 = 2.28 x2 = 1.79 x3 = 1.03
+
+		Valor ótimo:   Z = 23.03
+
+		O tempo decorrido para resolver o problema em questão foi: 0.002662 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 2.28 x2 = 1.79 x3 = 1.03
+
+		Valor ótimo:   Z = 23.03
+
+		O tempo decorrido para resolver o problema em questão foi: 0.002648 segundos
+
+	Execução 4:
+		Solução ótima: x1 = 2.28 x2 = 1.79 x3 = 1.03
+
+		Valor ótimo:   Z = 23.03
+
+		O tempo decorrido para resolver o problema em questão foi: 0.002835 segundos
+
+	Execução 5:
+		Solução ótima: x1 = 2.28 x2 = 1.79 x3 = 1.03
+
+		Valor ótimo:   Z = 23.03
+
+		O tempo decorrido para resolver o problema em questão foi: 0.002702 segundos
+
+	Média de tempo das execuções: (0.007564 + 0.002662 + 0.002648 + 0.002835 + 0.002702)/5 = 0.0036822
+
+	Solução igual ao simplex do scipy ? Sim.
+
+
+Lista 2 - Exercício 3
+
+	Execução 1:
+		Solução ótima: x1 = 5.00 x2 = 3.17 x3 = 3.83
+
+		Valor ótimo:   Z = 14.50
+
+		O tempo decorrido para resolver o problema em questão foi: 0.012267 segundos
+
+	Execução 2:
+		Solução ótima: x1 = 5.00 x2 = 3.17 x3 = 3.83
+
+		Valor ótimo:   Z = 14.50
+
+		O tempo decorrido para resolver o problema em questão foi: 0.008464 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 5.00 x2 = 3.17 x3 = 3.83
+
+		Valor ótimo:   Z = 14.50
+
+		O tempo decorrido para resolver o problema em questão foi: 0.008465 segundos
+
+	Execução 4:
+		Solução ótima: x1 = 5.00 x2 = 3.17 x3 = 3.83
+
+		Valor ótimo:   Z = 14.50
+
+		O tempo decorrido para resolver o problema em questão foi: 0.007957 segundos
+
+	Execução 5:
+		Solução ótima: x1 = 5.00 x2 = 3.17 x3 = 3.83
+
+		Valor ótimo:   Z = 14.50
+
+		O tempo decorrido para resolver o problema em questão foi: 0.008432 segundos
+	
+	Média de tempo das execuções: (0.012267 + 0.008464 + 0.008465 + 0.007957 + 0.008432)/5 = 0.009117
+
+	Solução igual ao simplex do scipy ? Sim.
+
+
+Lista 2 - Exercício 4
+
+	Execução 1:
+		Solução ótima: x1 = 4.00 x2 = 3.00 x3 = 2.00
+
+		Valor ótimo:   Z = 3.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.005413 segundos
+		
+	Execução 2:
+		Solução ótima: x1 = 4.00 x2 = 3.00 x3 = 2.00
+
+		Valor ótimo:   Z = 3.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.004377 segundos
+
+	Execução 3:
+		Solução ótima: x1 = 4.00 x2 = 3.00 x3 = 2.00
+
+		Valor ótimo:   Z = 3.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.004296 segundos
+
+	Execução 4:
+		Solução ótima: x1 = 4.00 x2 = 3.00 x3 = 2.00
+
+		Valor ótimo:   Z = 3.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.004230 segundos
+
+	Execução 5:
+		Solução ótima: x1 = 4.00 x2 = 3.00 x3 = 2.00
+
+		Valor ótimo:   Z = 3.00
+
+		O tempo decorrido para resolver o problema em questão foi: 0.004286 segundos
+
+	Média de tempo das execuções: (0.005413 + 0.004377 + 0.004296 + 0.004230 + 0.004286)/5 = 0.0045204
+
+	Solução igual ao simplex do scipy ? O valor máximo de Z sim, os valores
+    de x1, x2 e x3 não. Mas não há problema nisso visto que a solução para
+    esse problema é uma reta, tal como no problema 4 da lista 1.

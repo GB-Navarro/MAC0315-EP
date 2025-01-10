@@ -1,0 +1,296 @@
+Lista 1 - Exercício 2.1
+
+    Execução 1:
+        Solução encontrada: x1 = 6.00, x2 = 2.00, x3 = 0.00
+
+        Valor máximo de Z = 22.00
+
+        Tempo decorrido para resolver Problema 1: 0.037717 segundos
+    
+    Execução 2:
+        Solução encontrada: x1 = 6.00, x2 = 2.00, x3 = 0.00
+
+        Valor máximo de Z = 22.00
+
+        Tempo decorrido para resolver Problema 1: 0.028439 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 6.00, x2 = 2.00, x3 = 0.00
+
+        Valor máximo de Z = 22.00
+
+        Tempo decorrido para resolver Problema 1: 0.002872 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 6.00, x2 = 2.00, x3 = 0.00
+
+        Valor máximo de Z = 22.00
+
+        Tempo decorrido para resolver Problema 1: 0.004050 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 6.00, x2 = 2.00, x3 = 0.00
+
+        Valor máximo de Z = 22.00
+
+        Tempo decorrido para resolver Problema 1: 0.002887 segundos
+
+    Média de tempo das execuções: (0.037717 + 0.028439 + 0.002872 + 0.004050 + 0.002887)/5 = 0.015193
+    
+    Solução igual ao simplex custom ? Sim.
+
+
+Lista 1 - Exercício 2.2
+
+    Execução 1:
+        Solução encontrada: x1 = 4.00, x2 = 0.00, x3 = 3.00
+
+        Valor máximo de Z = 29.00
+
+        Tempo decorrido para resolver Problema 2: 0.004456 segundos
+    
+    Execução 2:
+        Solução encontrada: x1 = 4.00, x2 = 0.00, x3 = 3.00
+
+        Valor máximo de Z = 29.00
+
+        Tempo decorrido para resolver Problema 2: 0.003087 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 4.00, x2 = 0.00, x3 = 3.00
+
+        Valor máximo de Z = 29.00
+
+        Tempo decorrido para resolver Problema 2: 0.001851 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 4.00, x2 = 0.00, x3 = 3.00
+
+        Valor máximo de Z = 29.00
+
+        Tempo decorrido para resolver Problema 2: 0.003520 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 4.00, x2 = 0.00, x3 = 3.00
+
+        Valor máximo de Z = 29.00
+
+        Tempo decorrido para resolver Problema 2: 0.001917 segundos
+
+    Média de tempo das execuções: (0.004456 + 0.003087 + 0.001851 + 0.003520 + 0.001917)/5 = 0.0029662
+
+    Solução igual ao simplex custom ? Sim.
+
+
+Lista 1 - Exercício 2.3
+
+    Execução 1:
+        Solução encontrada: x1 = 0.00, x2 = 0.00, x3 = 8.00
+
+        Valor mínimo de Z = 16.00
+
+        Tempo decorrido para resolver Problema 3: 0.002728 segundos
+
+    Execução 2:
+        Solução encontrada: x1 = 0.00, x2 = 0.00, x3 = 8.00
+
+        Valor mínimo de Z = 16.00
+
+        Tempo decorrido para resolver Problema 3: 0.003195 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 0.00, x2 = 0.00, x3 = 8.00
+
+        Valor mínimo de Z = 16.00
+
+        Tempo decorrido para resolver Problema 3: 0.001870 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 0.00, x2 = 0.00, x3 = 8.00
+
+        Valor mínimo de Z = 16.00
+
+        Tempo decorrido para resolver Problema 3: 0.003066 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 0.00, x2 = 0.00, x3 = 8.00
+
+        Valor mínimo de Z = 16.00
+
+        Tempo decorrido para resolver Problema 3: 0.001799 segundos
+
+    Média de tempo das execuções: (0.002728 + 0.003195 + 0.001870 + 0.003066 + 0.001799)/5 = 0.0025316
+
+    Solução igual ao simplex custom ? Sim.
+
+
+Lista 1 - Exercício 2.4
+
+    Execução 1:
+        Solução encontrada: x1 = 2.00, x2 = 0.00, x3 = 4.00
+
+        Valor máximo de Z = 20.00
+
+        Tempo decorrido para resolver Problema 4: 0.002658 segundos
+
+    Execução 2:
+        Solução encontrada: x1 = 2.00, x2 = 0.00, x3 = 4.00
+
+        Valor máximo de Z = 20.00
+
+        Tempo decorrido para resolver Problema 4: 0.002183 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 2.00, x2 = 0.00, x3 = 4.00
+
+        Valor máximo de Z = 20.00
+
+        Tempo decorrido para resolver Problema 4: 0.001739 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 2.00, x2 = 0.00, x3 = 4.00
+
+        Valor máximo de Z = 20.00
+
+        Tempo decorrido para resolver Problema 4: 0.002076 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 2.00, x2 = 0.00, x3 = 4.00
+
+        Valor máximo de Z = 20.00
+
+        Tempo decorrido para resolver Problema 4: 0.001817 segundos
+
+    Média de tempo das execuções: (0.002658 + 0.002183 + 0.001739 + 0.002076 + 0.001817)/5 = 0.0020946
+
+    Solução igual ao simplex custom ? O valor máximo de Z sim, os valores
+    de x1, x2 e x3 não. Mas não há problema nisso visto que a solução para
+    esse problema é uma reta (é possível ver isso ao escrever o problema no site http://reshmat.ru/).
+
+
+Lista 1 - Exercício 2.5
+
+    Execução 1:
+        Solução encontrada: x1 = 2.28, x2 = 1.79, x3 = 1.03
+
+        Valor mínimo de Z = 23.03
+
+        Tempo decorrido para resolver Problema 5: 0.003875 segundos
+
+    Execução 2:
+        Solução encontrada: x1 = 2.28, x2 = 1.79, x3 = 1.03
+
+        Valor mínimo de Z = 23.03
+
+        Tempo decorrido para resolver Problema 5: 0.002255 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 2.28, x2 = 1.79, x3 = 1.03
+
+        Valor mínimo de Z = 23.03
+
+        Tempo decorrido para resolver Problema 5: 0.002243 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 2.28, x2 = 1.79, x3 = 1.03
+
+        Valor mínimo de Z = 23.03
+
+        Tempo decorrido para resolver Problema 5: 0.001904 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 2.28, x2 = 1.79, x3 = 1.03
+
+        Valor mínimo de Z = 23.03
+
+        Tempo decorrido para resolver Problema 5: 0.002422 segundos
+
+    Média de tempo das execuções: (0.003875 + 0.002255 + 0.002243 + 0.001904 + 0.002422)/5 = 0.0025398
+
+    Solução igual ao simplex custom ? Sim.
+
+
+Lista 2 - Exercício 3
+
+    Execução 1:
+        Solução encontrada: x1 = 5.00, x2 = 3.17, x3 = 3.83
+
+        Valor máximo de Z = 14.50
+
+        Tempo decorrido para resolver Problema 3: 0.002664 segundos
+    
+    Execução 2:
+        Solução encontrada: x1 = 5.00, x2 = 3.17, x3 = 3.83
+
+        Valor máximo de Z = 14.50
+
+        Tempo decorrido para resolver Problema 3: 0.002053 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 5.00, x2 = 3.17, x3 = 3.83
+
+        Valor máximo de Z = 14.50
+
+        Tempo decorrido para resolver Problema 3: 0.001843 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 5.00, x2 = 3.17, x3 = 3.83
+
+        Valor máximo de Z = 14.50
+
+        Tempo decorrido para resolver Problema 3: 0.001690 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 5.00, x2 = 3.17, x3 = 3.83
+
+        Valor máximo de Z = 14.50
+
+        Tempo decorrido para resolver Problema 3: 0.001784 segundos
+
+    Média de tempo das execuções: (0.002664 + 0.002053 + 0.001843 + 0.001690 + 0.001784)/5 = 0.0020068
+
+    Solução igual ao simplex custom ? Sim.
+
+
+Lista 2 - Exercício 4
+
+    Execução 1:
+        Solução encontrada: x1 = 2.00, x2 = 3.00, x3 = 4.00
+
+        Valor máximo de Z = 3.00
+
+        Tempo decorrido para resolver Problema 4: 0.003061 segundos
+
+    Execução 2:
+        Solução encontrada: x1 = 2.00, x2 = 3.00, x3 = 4.00
+
+        Valor máximo de Z = 3.00
+
+        Tempo decorrido para resolver Problema 4: 0.001894 segundos
+
+    Execução 3:
+        Solução encontrada: x1 = 2.00, x2 = 3.00, x3 = 4.00
+
+        Valor máximo de Z = 3.00
+
+        Tempo decorrido para resolver Problema 4: 0.001726 segundos
+
+    Execução 4:
+        Solução encontrada: x1 = 2.00, x2 = 3.00, x3 = 4.00
+
+        Valor máximo de Z = 3.00
+
+        Tempo decorrido para resolver Problema 4: 0.001792 segundos
+
+    Execução 5:
+        Solução encontrada: x1 = 2.00, x2 = 3.00, x3 = 4.00
+
+        Valor máximo de Z = 3.00
+
+        Tempo decorrido para resolver Problema 4: 0.001641 segundos
+
+    Média de tempo das execuções: (0.003061 + 0.001894 + 0.001726 + 0.001792 + 0.001641)/5 = 0.0020228
+
+    Solução igual ao simplex custom ? O valor máximo de Z sim, os valores
+    de x1, x2 e x3 não. Mas não há problema nisso visto que a solução para
+    esse problema é uma reta, tal como no problema 4 da lista 1.

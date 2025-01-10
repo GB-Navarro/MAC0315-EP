@@ -6,11 +6,11 @@ def define_problems():
     return {
         "Lista 1": {
             "Problema 1": {
-                "type": "max",
-                "c": [-3.00, -2.00, -1.00],
-                "A_ub": [[2.00, 1.00, 1.00], [4.00, 2.00, 3.00], [1.00, 2.00, 3.00]],
-                "b_ub": [14.00, 28.00, 10.00],
-                "bounds": [(0, None), (0, None), (0, None)],
+                "type": "max", # Tipo do problema
+                "c": [-3.00, -2.00, -1.00], # Custos das variáveis de decisão.
+                "A_ub": [[2.00, 1.00, 1.00], [4.00, 2.00, 3.00], [1.00, 2.00, 3.00]], # Coeficientes das restrições.
+                "b_ub": [14.00, 28.00, 10.00], # Recursos do problema.
+                "bounds": [(0, None), (0, None), (0, None)], # Limites das variáveis de decisão.
             },
             "Problema 2": {
                 "type": "max",
